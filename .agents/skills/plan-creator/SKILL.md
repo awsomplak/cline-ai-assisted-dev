@@ -1,6 +1,11 @@
 ---
 name: plan-creator
-description: Creates structured implementation plans in the current project's .ai/artifacts/ directory AND auto-populates the .ai/memory-bank/ with project analysis. Use when user says "create a plan", "plan out", "make a plan for", "design an approach", "break down tasks", or requests to structure work into an implementation plan. Operates on the active project workspace only.
+description: >
+  Creates a new structured implementation plan. ONLY activate when the user
+  explicitly requests a new plan with phrases like "create a new plan",
+  "generate plan for", "make a detailed plan to...", "break down tasks for...",
+  or uses the command "create plan". Do NOT activate for questions about existing
+  plans, status inquiries, or memory updates. Operates on the active project workspace only.
 ---
 
 # plan-creator
@@ -9,14 +14,7 @@ This skill handles the creation of structured implementation plans and automatic
 
 ## Usage
 
-Activate this skill when the user:
-- Says "create a plan for..."
-- Says "plan out..."
-- Says "break down the tasks for..."
-- Says "design an approach for..."
-- Requests to structure work into an implementation plan
-
-This skill always operates on the **current active project workspace**. If multiple projects are open, confirm which one the user intends.
+Activate this skill when the user explicitly requests a **new** plan using the triggers in the frontmatter. This skill always operates on the **current active project workspace**. If multiple projects are open, confirm which one the user intends.
 
 ## Steps
 
@@ -50,27 +48,7 @@ This skill always operates on the **current active project workspace**. If multi
 
 6. **Create Plan Files**
     - `plan.md` with Overview, Approach, and Expected Outcomes sections
-    - `tasks.md` with phases and ordered checklist formatted below:
-      ```markdown
-      # Tasks
-
-         ## Phase 1: {phase goal}
-            - [ ] Task 1: {description}
-               - [ ] Task 1.1: {description}
-               - [ ] Task 1.2: {description}
-            - [ ] Task 2: {description}
-               - [ ] Task 2.1: {description}
-               - [ ] Task 2.2: {description}
-
-         ## Phase 2: {phase goal}
-            - [ ] Task 3: {description}
-               - [ ] Task 3.1: {description}
-               - [ ] Task 3.2: {description}
-            - [ ] Task 4: {description}
-               - [ ] Task 4.1: {description}
-               - [ ] Task 4.2: {description}
-      ```
-      Phases should represent logical groupings of work that can be completed together. Each phase should be independently testable.
+    - `tasks.md` with phases and ordered checklist formatted as specified in `02-plan-artifacts.md` (Tasks Format)
     - `notes.md` only if technical constraints, risks, or key decisions exist
 
 7. **Update Registry**
@@ -87,26 +65,6 @@ This skill always operates on the **current active project workspace**. If multi
     - Remind user the plan is ready for implementation
     - **CRITICAL**: Do NOT execute any implementation, code changes, or task execution
 
-## Phase Execution Rules (For Implementation)
-When user asks to implement the plan:
-1. **Execute ONE phase at a time**
-   - Identify the first phase with incomplete tasks (`[ ]`)
-   - Implement ONLY that phase's tasks
-   - Do not read or prepare tasks from future phases
+## Implementation Instructions
 
-2. **Mark completion in real-time**
-   - Change `[ ]` to `[x]` in `tasks.md` as each task finishes
-   - Save `tasks.md` after each task
-
-3. **Stop after phase completion**
-   - When all tasks in current phase are `[x]`, STOP
-   - Display: "✅ Phase {N}: {phase goal} completed. Tasks: {completed}/{total}."
-
-4. **Require explicit confirmation**
-   - Ask: "Ready to proceed with Phase {N+1}: {next phase goal}?"
-   - Wait for user to say "yes", "proceed", "continue", or similar 
-   - If user says "no" or "wait", stop and let them review
-
-5. **Update memory bank**
-   - After each phase: add entry to `./.ai/memory-bank/progress.md`
-   - Format: `[YYYY-MM-DD HH:MM] Phase {N} completed: {phase goal}. {brief summary of changes}`
+When the user asks to implement this plan, **strictly follow the Phase Execution Rules in `02-plan-artifacts.md`**. Do not use any other phase‑execution instructions.
