@@ -1,6 +1,17 @@
 # Changelog
 
-## [1.1.0] - 2026-05-16
+## [1.0.2] - 2026-05-17
+
+### Added
+- **Git automation scripts** — cross-platform dispatchers (`scripts/git.ps1` for PowerShell, `scripts/git.sh` for Bash) with four commands: `commit`, `push`, `merge`, `release`.
+- **Platform-specific implementations** — full scripts for Windows (`scripts/windows/*.ps1`) and Unix (`scripts/unix/*.sh`), each handling native shell syntax correctly.
+- **Build-in help system** — both dispatchers display usage instructions when run with no arguments, `help`, `--help`, or `-h`.
+- **`.gitignore`** — excludes empty log directories from version control.
+
+### Changed
+- **All scripts** — Uses `cd $(git rev-parse --show-toplevel)` to ensure commands run from the repository root regardless of invocation directory.
+
+## [1.0.1] - 2026-05-16
 
 ### Optimized
 - **Removed `workflows/create-plan.md`** – its content was identical to `plan-creator/SKILL.md`, causing redundancy and potential confusion. Plan creation now exclusively uses the skill.

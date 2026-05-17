@@ -90,11 +90,13 @@ When implementing a plan, strictly follow these rules:
 
 Use the `/switch-plan` workflow to change the active plan. Do not manually edit the registry outside that workflow.
 
-## Auto-Open Generated Files (No Confirmation)
+## Registry Integrity
 
-After creating plan files, open them in the editor without asking:
-- `./.ai/artifacts/{uuid}/plan.md`
-- `./.ai/artifacts/{uuid}/tasks.md`
+The registry (`registry.md`) is the single source of truth for plan discovery. To maintain integrity:
+
+- **Never modify registry.md directly.** Always use the `/switch-plan` workflow or the `plan-creator` skill to make changes.
+- **External modifications** (e.g., manual edits, git merges) can cause the registry to become out of sync with the actual `./.ai/artifacts/{uuid}/` directories. If you detect a mismatch (a plan directory exists but isn't in the registry, or vice versa), use `/update-memory` to flag the issue.
+- **Orphan detection:** If a plan's files are deleted externally but its registry entry remains, mark the entry as ✅ (completed) or ⏸️ (paused). Never delete registry entries — the history is valuable context.
 
 ## Constraints
 

@@ -25,7 +25,8 @@ cline-ai-assisted-dev/
 │   │   ├── 01-memory-bank.md
 │   │   ├── 02-plan-artifacts.md
 │   │   ├── 03-token-strategies.md
-│   │   └── 04-commands.md
+│   │   ├── 04-commands.md
+│   │   └── 05-environment.md
 │   └── Workflows/
 │       ├── plan-status.md
 │       ├── switch-plan.md
@@ -44,7 +45,8 @@ cline-ai-assisted-dev/
 ├── 01-memory-bank.md
 ├── 02-plan-artifacts.md
 ├── 03-token-strategies.md
-└── 04-commands.md
+├── 04-commands.md
+└── 05-environment.md
 ```
 
 **Global Workflows:**
@@ -117,7 +119,7 @@ Copy-Item -Path "Cline\Workflows\*.md" -Destination "$env:USERPROFILE\Documents\
 ### 3. Verify in Cline
 
 - Open Cline in IDE (VS Code, JetBrains, etc.)
-- Click the **Rules** icon (near the chat input) to confirm all 4 rule files appear and are toggled **ON**
+- Click the **Rules** icon (near the chat input) to confirm all 5 rule files (01–05) appear and are toggled **ON**
 - Workflows are automatically recognized when placed in the correct directory
 - The `plan-creator` skill loads automatically when its trigger phrases are detected
 
