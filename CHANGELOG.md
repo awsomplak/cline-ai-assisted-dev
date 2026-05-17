@@ -3,13 +3,17 @@
 ## [1.0.2] - 2026-05-17
 
 ### Added
-- **Git automation scripts** — cross-platform dispatchers (`scripts/git.ps1` for PowerShell, `scripts/git.sh` for Bash) with four commands: `commit`, `push`, `merge`, `release`.
-- **Platform-specific implementations** — full scripts for Windows (`scripts/windows/*.ps1`) and Unix (`scripts/unix/*.sh`), each handling native shell syntax correctly.
-- **Build-in help system** — both dispatchers display usage instructions when run with no arguments, `help`, `--help`, or `-h`.
-- **`.gitignore`** — excludes empty log directories from version control.
+- **Environment Detection Rule** (`Cline/Rules/05-environment.md`) — definitive authority on OS/shell detection before any command execution. Includes detection procedure, shell command translation table, anti-patterns by shell, and mid-session shell change detection.
+- **`plan-creator/SKILL.md` improvements** — stronger activation triggers, clearer phase execution reference, and better task generation examples.
+- **`.gitignore`** — excludes `.ai/` and `scripts/` directories from version control.
+- **`update-memory.md` enhancements** — better structure for memory bank sync workflow.
 
 ### Changed
-- **All scripts** — Uses `cd $(git rev-parse --show-toplevel)` to ensure commands run from the repository root regardless of invocation directory.
+- **Memory bank rules** (`01-memory-bank.md`) — clarified auto-setup (directories only, no content population), refined lazy loading strategy, stricter security constraints on path traversal and secret copying.
+- **Plan artifacts rules** (`02-plan-artifacts.md`) — registry integrity section added, external modification detection, orphan detection protocol.
+- **Token strategies** (`03-token-strategies.md`) — stronger lazy-loading rules, context window monitoring thresholds, anti-patterns clarified.
+- **Command reference** (`04-commands.md`) — updated to reference the new environment detection rule, clarified session commands.
+- **README** — updated to reflect new files and environment detection capabilities.
 
 ## [1.0.1] - 2026-05-16
 
