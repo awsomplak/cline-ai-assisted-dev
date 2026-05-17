@@ -23,28 +23,19 @@ Maintain these files in `./.ai/memory-bank/` with current project knowledge:
 - `context.md` - Problem space, user needs, key decisions made
 - `patterns.md` - Architectures, tech stack, conventions, key libraries
 - `progress.md` - Current status, completed, in progress, upcoming, known issues
+- `decisions.md` - Architectural decision log with rationale (table format: Date | Decision | Alternatives | Rationale). Max 20 rows; archive oldest when exceeded. Lazy-loaded — only read when user asks "why did we..." or when creating plans that touch the same domain.
 
 ## Environment Detection & Storage
-- `environment.md` must always exist in every project’s memory bank.
+- `environment.md` must always exist in every project's memory bank.
 - If the file is missing or older than 7 days, Cline must silently perform environment detection and create/refresh it.
-- Detection logic follows `05-environment.md` (if present) or these defaults:
-  - Determine the operating system (Windows/macOS/Linux).
-  - Determine the active shell (e.g., PowerShell, Bash, Zsh).
-- Write the file in the exact format:
-  ```markdown
-  # Development Environment
-  - Operating System: {detected}
-  - Shell: {detected}
-  - Terminal: VS Code integrated terminal
-  - Last detected: {timestamp}
-  ```
+- **Age check**: Parse the `Last detected:` timestamp in `environment.md` and compare against the current date. If the difference exceeds 7 days, re-detect.
+- Detection procedure is defined exclusively in **`05-environment.md`** (the single source of truth). Follow that rule's steps for detection, writing, and fallback.
 - Never ask the user for confirmation during automatic creation. Only ask if auto-detection fails.
-
-> Detailed detection procedure is described in `05-environment.md`. If that rule is not loaded, fall back to the inline logic above.
 
 ## Loading Strategy
 - **ALWAYS LOAD FIRST (highest priority):** `./.ai/memory-bank/environment.md` on every `follow rules` invocation. The environment determines correct command syntax for ALL subsequent operations. This is the sole exception to lazy loading.
-- On `follow rules`: After loading environment, parse `./.ai/artifacts/registry.md` for the active plan (⏹️). Load **only** that plan's `tasks.md`. Do **not** load other memory bank files unless the user's first request clearly requires them (e.g., "Explain the project architecture" → load `brief.md` and `patterns.md`).
+- **Before ANY `execute_command` call**, consult `05-environment.md` for the Command Validation Protocol to ensure the command uses the correct shell syntax for the detected environment.
+- On `follow rules`: After loading environment, parse `./.ai/artifacts/registry.md` for the active plan (`⏹️` = active, `⏸️` = paused, `✅` = completed). Load **only** that plan's `tasks.md`. Do **not** load other memory bank files unless the user's first request clearly requires them (e.g., "Explain the project architecture" → load `brief.md` and `patterns.md`).
 - Load additional memory files on-demand as the task scope expands.
 - Never load all memory files at startup unless explicitly asked.
 

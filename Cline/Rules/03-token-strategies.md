@@ -23,14 +23,36 @@
 - **EXCEPTION (always load):** `environment.md` — this 4-line file is always loaded on `follow rules` because it determines correct shell syntax for ALL commands. The token cost is negligible and the safety benefit is critical.
 - Artifacts: Load only active plan files, not all plans
 - Project source: Scan only directories relevant to the task
+- **Project Scanner** (`06-project-scanner.md`): Loaded only during `plan-creator` skill execution, not on every session
 - On `follow rules`: Load `environment.md` first, then load the active plan’s `tasks.md`. Do **not** pre-load other memory bank files unless the user’s request clearly needs them.
 
-### Context Management
+### Context Budget
 
-- Monitor context window usage during tasks
-- At ~70% capacity: Summarize current state to `./.ai/memory-bank/progress.md`
-- Suggest starting a fresh session with `follow rules` to reload context
-- Use `[x]` checkboxes in tasks.md instead of separate status tracking files
+Replace vague capacity estimates with deterministic turn-counting:
+
+- **Turn 15**: Add to response: "📊 Session at ~50% capacity. Consider `/update-memory` if switching topics."
+- **Turn 25**: Add: "⚠️ Session at ~80% capacity. Run `/update-memory` and start a fresh session with `follow rules`."
+- **Turn 30**: STOP implementation. Force: "🛑 Context limit reached. Saving state to `progress.md`. Start a new session with `follow rules`."
+
+### File-Size Budgets
+
+Prevent memory bloat by enforcing max sizes:
+
+| File | Max Lines | Action if exceeded |
+|------|-----------|--------------------|
+| `brief.md` | 30 | Summarize; move details to `notes.md` |
+| `context.md` | 40 | Archive old decisions to a dated section |
+| `patterns.md` | 50 | Keep only current architecture; archive previous |
+| `progress.md` | 60 | Compress completed items older than 7 days into a "Historical Summary" section |
+| `decisions.md` | 20 rows | Archive oldest rows when exceeded |
+| `tasks.md` | 80 | Consider splitting into sub-plans |
+
+### Memory Compression Protocol
+
+When `progress.md` exceeds 60 lines:
+1. Keep the last 5 timestamped entries
+2. Summarize older entries into a single `## Historical Summary` section
+3. Never delete entries — compress into summaries
 
 ### File Optimization
 

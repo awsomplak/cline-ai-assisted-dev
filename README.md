@@ -6,7 +6,7 @@ A comprehensive rules, workflows, and skills system for Cline that provides stru
 
 This system transforms Cline into a project-aware development assistant that:
 - Remembers your project architecture across sessions via a Memory Bank
-- Plans work in structured, UUID-tracked artifacts before writing code
+- Plans work in structured, 8-char UUID-tracked artifacts before writing code
 - Executes implementations one phase at a time with explicit user confirmation
 - Saves tokens through lazy loading, registry-based discovery, and minimal file operations
 
@@ -16,24 +16,37 @@ This system transforms Cline into a project-aware development assistant that:
 
 ```markdown
 cline-ai-assisted-dev/
-├── .agents/
-│   └── skills/
-│       └── plan-creator/
-│           └── SKILL.md
 ├── Cline/
 │   ├── Rules/
 │   │   ├── 01-memory-bank.md
 │   │   ├── 02-plan-artifacts.md
 │   │   ├── 03-token-strategies.md
 │   │   ├── 04-commands.md
-│   │   └── 05-environment.md
-│   └── Workflows/
-│       ├── plan-status.md
-│       ├── switch-plan.md
-│       └── update-memory.md
+│   │   ├── 05-environment.md
+│   │   └── 06-project-scanner.md
+│   ├── Skills/
+│   │   └── plan-creator/
+│   │       ├── SKILL.md
+│   │       └── templates/
+│   │           ├── feature-crud.md
+│   │           ├── auth-flow.md
+│   │           ├── migration.md
+│   │           ├── refactor.md
+│   │           ├── bugfix.md
+│   │           └── integration.md
+│   ├── Workflows/
+│   │   ├── plan-status.md
+│   │   ├── switch-plan.md
+│   │   └── update-memory.md
+│   └── portability/
+│       ├── cursor-adapter.md
+│       ├── windsurf-adapter.md
+│       └── copilot-adapter.md
 ├── CHANGELOG.md
 ├── LICENSE
-└── README.md
+├── README.md
+├── install.sh
+└── install.ps1
 ```
 
 ### Installed Paths (per-machine)
@@ -46,7 +59,8 @@ cline-ai-assisted-dev/
 ├── 02-plan-artifacts.md
 ├── 03-token-strategies.md
 ├── 04-commands.md
-└── 05-environment.md
+├── 05-environment.md
+└── 06-project-scanner.md
 ```
 
 **Global Workflows:**
@@ -62,7 +76,14 @@ cline-ai-assisted-dev/
 
 ```markdown
 ~/.agents/skills/plan-creator/
-└── SKILL.md
+├── SKILL.md
+└── templates/
+    ├── feature-crud.md
+    ├── auth-flow.md
+    ├── migration.md
+    ├── refactor.md
+    ├── bugfix.md
+    └── integration.md
 ```
 
 ### Per-Project Generated Structure
@@ -70,13 +91,15 @@ cline-ai-assisted-dev/
 ```markdown
 {project-root}/.ai/
 ├── memory-bank/
+│   ├── environment.md
 │   ├── brief.md
 │   ├── context.md
+│   ├── decisions.md
 │   ├── patterns.md
 │   └── progress.md
 └── artifacts/
     ├── registry.md
-    └── {uuid}/
+    └── {8-char-uuid}/
         ├── plan.md
         ├── tasks.md
         └── notes.md
@@ -84,13 +107,42 @@ cline-ai-assisted-dev/
 
 ## Installation
 
-### 1. Set Up Global Skill, Rules & Workflows
+### Quick Install (Recommended)
+
+Use the included install scripts — they handle directory creation, file copying, and safe re-runs (existing files are replaced, directories preserved).
 
 **macOS/Linux**:
 ```bash
-# Skill
+chmod +x install.sh
+./install.sh
+```
+
+**Windows** (PowerShell):
+```powershell
+.\install.ps1
+```
+
+To uninstall:
+```bash
+# macOS/Linux
+./install.sh --uninstall
+```
+```powershell
+# Windows
+.\install.ps1 -Uninstall
+```
+
+### Manual Install
+
+<details>
+<summary>Click to expand manual commands</summary>
+
+**macOS/Linux**:
+```bash
+# Skill + Templates
 mkdir -p ~/.agents/skills/plan-creator
-cp .agents/skills/plan-creator/SKILL.md ~/.agents/skills/plan-creator/
+cp Cline/Skills/plan-creator/SKILL.md ~/.agents/skills/plan-creator/
+cp -r Cline/Skills/plan-creator/templates ~/.agents/skills/plan-creator/
 
 # Rules
 mkdir -p ~/Documents/Cline/Rules
@@ -103,9 +155,10 @@ cp Cline/Workflows/*.md ~/Documents/Cline/Workflows/
 
 **Windows**:
 ```powershell
-# Skill
+# Skill + Templates
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.agents\skills\plan-creator"
-Copy-Item -Path ".agents\skills\plan-creator\SKILL.md" -Destination "$env:USERPROFILE\.agents\skills\plan-creator\"
+Copy-Item -Path "Cline\Skills\plan-creator\SKILL.md" -Destination "$env:USERPROFILE\.agents\skills\plan-creator\"
+Copy-Item -Path "Cline\Skills\plan-creator\templates" -Destination "$env:USERPROFILE\.agents\skills\plan-creator\templates" -Recurse -Force
 
 # Rules
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Documents\Cline\Rules"
@@ -116,10 +169,12 @@ New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Documents\Cline\Work
 Copy-Item -Path "Cline\Workflows\*.md" -Destination "$env:USERPROFILE\Documents\Cline\Workflows\"
 ```
 
-### 3. Verify in Cline
+</details>
+
+### 2. Verify in Cline
 
 - Open Cline in IDE (VS Code, JetBrains, etc.)
-- Click the **Rules** icon (near the chat input) to confirm all 5 rule files (01–05) appear and are toggled **ON**
+- Click the **Rules** icon (near the chat input) to confirm all 6 rule files (01–06) appear and are toggled **ON**
 - Workflows are automatically recognized when placed in the correct directory
 - The `plan-creator` skill loads automatically when its trigger phrases are detected
 
@@ -141,13 +196,13 @@ create a plan for {your feature}
 ```
 
 Or simply say create plan. This will:
-
-This will:
 1. Create `.ai/` directory structure if missing
-2. Scan your project and auto-populate memory-bank files
-3. Generate a UUID-tracked plan with phase-organized tasks
-4. Open all generated files in your editor
-5. Stop - no code is executed
+2. Detect your environment (OS, shell) automatically
+3. Scan your project using the **Fingerprint Protocol** (`06-project-scanner.md`) and auto-populate memory-bank files
+4. Match your request against **plan templates** (CRUD, auth, migration, refactor, bugfix, integration) for smarter generation
+5. Generate a plan with 8-char randomized alphanumeric UUID and phase-organized tasks
+6. Open all generated files in your editor
+7. Stop - no code is executed
 
 > **Note:** There is no separate `/create-plan` workflow file. The plan creation is handled entirely by the skill (`plan-creator`), following the rules in `02-plan-artifacts.md`.
 
@@ -176,10 +231,12 @@ start phase 1
 The system follows the Phase Execution Rules (centralized in `02-plan-artifacts.md`):
 
 1. Execute only the current phase's tasks
-2. Mark tasks `[x]` in real-time
+2. Mark tasks with appropriate markers (`[x]`, `[x✓]`, `[x!]`, `[!]`, `[—]`) in real-time
 3. Stop when the phase is done
 4. Ask for confirmation before proceeding to the next phase
 5. Update `progress.md` after each phase
+6. Handle failures: mark `[!]`, stop, ask user
+7. Verify all tasks resolved before marking plan complete
 
 ### Updating Project Memory
 
@@ -221,11 +278,13 @@ Each project maintains its own `.ai/` directory. Rules are global but operations
 
 | **Command**           | **Action**                                              |
 | --------------------- | ------------------------------------------------------- |
-| `follow rules`        | Load active plan’s `tasks.md`; on-demand memory loading |
+| `follow rules`        | Load active plan's `tasks.md`; on-demand memory loading |
 | `create plan`         | Activate `plan-creator` skill to generate a new plan    |
 | `/plan-status`        | Show registry with active plan highlighted              |
-| `/switch-plan {uuid}` | Activate a different plan                               |
+| `/switch-plan {uuid}` | Activate a different plan (8-character alphanumeric)   |
 | `/update-memory`      | Sync memory bank with project state                     |
+| `start phase {N}`     | Execute Phase N of the active plan                      |
+| `summarize session`   | Save state to progress.md, prepare for context reset    |
 
 ## Task Format
 
@@ -238,24 +297,55 @@ Tasks are organized by phases (see `02-plan-artifacts.md` for full specification
 
 - [ ] Create User model
 - [ ] Add login endpoint
+  → depends: Create User model
 - [ ] Write auth tests
+  → depends: Add login endpoint
 
 ## Phase 2: Build dashboard
 
 - [ ] Create dashboard controller
 - [ ] Add charts component
+  ? if: patterns.md shows frontend framework
 - [ ] Write dashboard tests
 ```
+
+### Task Status Markers
+
+| Marker | Meaning |
+|--------|----------|
+| `[ ]` | Pending |
+| `[x]` | Completed and verified |
+| `[x✓]` | Completed with test pass |
+| `[x!]` | Completed but with warnings |
+| `[!]` | Failed — requires user intervention |
+| `[—]` | Skipped — conditional task that does not apply |
 
 ## Token Saving Strategies
 
 - **Lazy loading:** Memory files loaded on-demand, not at startup
 - **Registry parsing:** Table-based discovery instead of directory scanning
+- **Smart scanning:** Framework-aware `06-project-scanner.md` scans only relevant directories
+- **Plan templates:** Pre-built skeletons save 30-50% of plan generation tokens
+- **Context budget:** Turn-counting proxy (15/25/30 checkpoints) with automatic session management
+- **File-size caps:** Memory files have max line limits to prevent bloat
 - **Short filenames:** `brief.md` over `projectBrief.md`
 - **Compact formats:** Markdown tables over verbose lists
-- **No optional files unless needed:** `notes.md` created only when constraints/risks exist.
-- **Context monitoring:** Suggests fresh session at \~70% capacity
-- **Single source of truth:** Phase execution rules defined once in `02-plan-artifacts.md`, referenced elsewhere.
+- **No optional files unless needed:** `notes.md` created only when constraints/risks exist
+- **Single source of truth:** Phase execution rules defined once in `02-plan-artifacts.md`, referenced elsewhere
+
+## Portability
+
+While designed for Cline, this system can be adapted for other AI coding tools:
+
+| Tool | Adapter Guide |
+|------|---------------|
+| Cursor | `Cline/portability/cursor-adapter.md` |
+| Windsurf | `Cline/portability/windsurf-adapter.md` |
+| GitHub Copilot | `Cline/portability/copilot-adapter.md` |
+
+> **Note:** Portability guides are reference documentation only — they stay in this repository and are **not** installed. Read the relevant guide when you want to migrate your rules to another tool.
+
+The `.ai/` directory structure is tool-agnostic and works with any AI assistant that can read/write files.
 
 ## Requirements
 
