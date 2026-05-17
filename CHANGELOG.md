@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.0] - 2026-05-16
+## [1.0.1] - 2026-05-16
 
 ### Optimized
 - **Removed `workflows/create-plan.md`** – its content was identical to `plan-creator/SKILL.md`, causing redundancy and potential confusion. Plan creation now exclusively uses the skill.

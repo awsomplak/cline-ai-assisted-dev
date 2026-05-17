@@ -20,9 +20,10 @@
 ### Lazy Loading
 
 - Memory bank: Load only files relevant to current task, on demand
+- **EXCEPTION (always load):** `environment.md` — this 4-line file is always loaded on `follow rules` because it determines correct shell syntax for ALL commands. The token cost is negligible and the safety benefit is critical.
 - Artifacts: Load only active plan files, not all plans
 - Project source: Scan only directories relevant to the task
-- On `follow rules`: Only load the active plan’s `tasks.md`. Do **not** pre-load memory bank files unless the user’s request clearly needs them.
+- On `follow rules`: Load `environment.md` first, then load the active plan’s `tasks.md`. Do **not** pre-load other memory bank files unless the user’s request clearly needs them.
 
 ### Context Management
 
@@ -41,7 +42,7 @@
 
 ## Anti-Patterns to Avoid
 
-- ❌ Running `ls ./ai/artifacts/` to find plans
+- ❌ Scanning the `./.ai/artifacts/` directory to find plans (parse `registry.md` instead)
 - ❌ Loading all memory bank files when only one is needed
 - ❌ Creating separate files for small amounts of related content
 - ❌ Reading entire plan files when only the task list is needed

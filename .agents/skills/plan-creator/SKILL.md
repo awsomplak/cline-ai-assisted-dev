@@ -23,11 +23,18 @@ Activate this skill when the user explicitly requests a **new** plan using the t
     - All paths are relative to this root
     - If multiple workspaces, confirm with user
 
-2. **Ensure Structure Exists**
+2. **Detect Environment FIRST** *(moved before directory creation — see `05-environment.md` for full details)*
+    - Run environment detection to determine OS and shell (PowerShell, Bash, etc.)
+    - Generate `./.ai/memory-bank/environment.md` with the detected values
+    - This ensures all subsequent directory/file creation commands use the correct shell syntax
+    - If detection fails, silently fall back to fallback logic described in `01-memory-bank.md`
+
+3. **Ensure Structure Exists** *(now safe: environment is known, use correct shell syntax)*
     - If `./.ai/` doesn't exist, silent create: `./.ai/`, `./.ai/memory-bank/`, `./.ai/artifacts/`
     - If `./.ai/artifacts/registry.md` doesn't exist, create with header and empty table
+    - **Use the detected shell's directory creation command** (e.g., `New-Item -ItemType Directory -Force -Path` for PowerShell, `mkdir -p` for Bash)
 
-3. **Scan Project & Populate Memory Bank (CRITICAL)**
+4. **Scan Project & Populate Memory Bank (CRITICAL)**
    - If `./.ai/memory-bank/` files are missing or empty:
       - Scan key project files: README.md, config files (composer.json, package.json, etc.), main source directories
       - Generate `brief.md` with project overview, requirements, goals from scan data
@@ -35,32 +42,33 @@ Activate this skill when the user explicitly requests a **new** plan using the t
       - Generate `patterns.md` with detected architecture, tech stack, conventions, key libraries
       - Generate `progress.md` with initialized status and this analysis noted
    - If files already have content, skip population
+   - `environment.md` was already created/refreshed in Step 2, skip if up to date
 
-4. **Read Registry**
+5. **Read Registry**
     - Parse `./.ai/artifacts/registry.md` to understand existing plans
     - Extract UUIDs and statuses from the markdown table
     - Do NOT scan the `./.ai/artifacts/` directory
 
-5. **Generate Plan Identity**
+6. **Generate Plan Identity**
     - Create a unique UUID for the new plan
     - Ask user for a concise one-line summary of the plan
     - Create directory `./.ai/artifacts/{uuid}/`
 
-6. **Create Plan Files**
+7. **Create Plan Files**
     - `plan.md` with Overview, Approach, and Expected Outcomes sections
     - `tasks.md` with phases and ordered checklist formatted as specified in `02-plan-artifacts.md` (Tasks Format)
     - `notes.md` only if technical constraints, risks, or key decisions exist
 
-7. **Update Registry**
+8. **Update Registry**
     - Change all existing `⏹️` statuses to `⏸️` in `./.ai/artifacts/registry.md`
     - Add new row: `| {uuid} | ⏹️ | {current_timestamp} | {summary} |`
 
-8. **Auto-Open Files (No Confirmation)**
+9. **Auto-Open Files (No Confirmation)**
    - Open in editor without asking:
       - `./.ai/artifacts/{uuid}/plan.md`
       - `./.ai/artifacts/{uuid}/tasks.md`
 
-9. **Confirm and Stop**
+10. **Confirm and Stop**
     - Display: "Plan '{summary}' created with UUID {uuid}. Memory bank populated from project analysis. Files opened in editor."
     - Remind user the plan is ready for implementation
     - **CRITICAL**: Do NOT execute any implementation, code changes, or task execution

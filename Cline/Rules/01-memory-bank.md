@@ -18,13 +18,33 @@ If `./.ai/` directory does not exist in the current project root, create it sile
 ## Core Files
 Maintain these files in `./.ai/memory-bank/` with current project knowledge:
 
+- `environment.md` – Operating system, shell, terminal, and other environment details (auto-detected)
 - `brief.md` - Project overview, core requirements and goals
 - `context.md` - Problem space, user needs, key decisions made
 - `patterns.md` - Architectures, tech stack, conventions, key libraries
 - `progress.md` - Current status, completed, in progress, upcoming, known issues
 
+## Environment Detection & Storage
+- `environment.md` must always exist in every project’s memory bank.
+- If the file is missing or older than 7 days, Cline must silently perform environment detection and create/refresh it.
+- Detection logic follows `05-environment.md` (if present) or these defaults:
+  - Determine the operating system (Windows/macOS/Linux).
+  - Determine the active shell (e.g., PowerShell, Bash, Zsh).
+- Write the file in the exact format:
+  ```markdown
+  # Development Environment
+  - Operating System: {detected}
+  - Shell: {detected}
+  - Terminal: VS Code integrated terminal
+  - Last detected: {timestamp}
+  ```
+- Never ask the user for confirmation during automatic creation. Only ask if auto-detection fails.
+
+> Detailed detection procedure is described in `05-environment.md`. If that rule is not loaded, fall back to the inline logic above.
+
 ## Loading Strategy
-- On `follow rules`: Parse `./.ai/artifacts/registry.md` for the active plan (⏹️). Load **only** that plan’s `tasks.md`. Do **not** load memory bank files unless the user’s first request clearly requires them (e.g., “Explain the project architecture” → load `brief.md` and `patterns.md`).
+- **ALWAYS LOAD FIRST (highest priority):** `./.ai/memory-bank/environment.md` on every `follow rules` invocation. The environment determines correct command syntax for ALL subsequent operations. This is the sole exception to lazy loading.
+- On `follow rules`: After loading environment, parse `./.ai/artifacts/registry.md` for the active plan (⏹️). Load **only** that plan's `tasks.md`. Do **not** load other memory bank files unless the user's first request clearly requires them (e.g., "Explain the project architecture" → load `brief.md` and `patterns.md`).
 - Load additional memory files on-demand as the task scope expands.
 - Never load all memory files at startup unless explicitly asked.
 

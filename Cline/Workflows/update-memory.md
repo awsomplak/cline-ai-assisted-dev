@@ -7,8 +7,11 @@
     - Only update memory files within this project's `./.ai/memory-bank/`
     - Never touch memory files from other projects
 
-1. **Ensure Memory Bank Exists**
-   - If `./.ai/memory-bank/` doesn't exist, silent create it first.
+1. **Ensure Environment is Known + Memory Bank Exists**
+   - First, check `./.ai/memory-bank/environment.md` exists and is up to date (< 7 days)
+   - If missing or outdated, run environment detection before any file operations
+   - Use the detected shell's syntax for directory creation (e.g., `New-Item` for PowerShell, `mkdir -p` for Bash)
+   - If `./.ai/memory-bank/` doesn't exist, silent create it using correct shell command
    - If `./.ai/memory-bank/` is empty or files are missing, run project scan to generate them
    - Do NOT leave memory-bank empty
 

@@ -4,11 +4,11 @@
 
 | User Input | Action |
 |------------|--------|
-| `follow rules` | Determine project root, parse `registry.md` for active plan (⏹️), load **only** that plan’s `tasks.md`. Do not load memory bank files unless required by the next user request. |
+| `follow rules` | 1. **Load environment:** Read `./.ai/memory-bank/environment.md`. If missing or older than 7 days, run environment detection first (see `05-environment.md`). 2. Parse `registry.md` for active plan (⏹️). 3. Load **only** that plan's `tasks.md`. Do not load other memory bank files unless required by the next user request. |
 | `create plan` | Activate the `plan-creator` skill to generate a new plan and populate the memory bank. |
-| `plan switch {uuid}` | Execute `/switch-plan` workflow with specified UUID in current project. |
-| `plan status` | Execute `/plan-status` workflow for current project. |
-| `update memory` | Execute `/update-memory` workflow for current project. |
+| `/switch-plan {uuid}` | Execute switch-plan workflow with specified UUID in current project. |
+| `/plan-status` | Execute plan-status workflow for current project. |
+| `/update-memory` | Execute update-memory workflow for current project. |
 | `summarize session` | Update `progress.md` with current state, prepare for context reset. |
 
 ## Workflow Commands
