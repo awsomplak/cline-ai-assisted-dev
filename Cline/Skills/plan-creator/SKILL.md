@@ -26,7 +26,7 @@ Activate this skill when the user explicitly requests a **new** plan using the t
     - Generate `./.ai/memory-bank/environment.md` with detected OS/shell
     - Ensures all subsequent commands use the correct shell syntax (PowerShell vs Bash)
 
-3. **Ensure Structure Exists** — Silent create `./.ai/`, `./.ai/memory-bank/`, `./.ai/artifacts/` and `registry.md` if missing (per `01-memory-bank.md` Auto-Setup and `02-plan-artifacts.md` Auto-Setup).
+3. **Ensure Structure Exists** — Silent create `./.ai/`, `./.ai/memory-bank/`, `./.ai/artifacts/` and `registry.md` if missing (per `01-memory-bank.md` Auto-Setup and `02-plan-artifacts.md` Plan Mode Bootstrap). This step is ALSO enforced globally by `02-plan-artifacts.md` Plan Mode Bootstrap rule.
 
 4. **Scan Project & Populate Memory Bank (CRITICAL)**
     - If any of `brief.md`, `context.md`, `patterns.md`, `progress.md`, `decisions.md` are missing/empty in `./.ai/memory-bank/`:

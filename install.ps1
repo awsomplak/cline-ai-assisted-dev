@@ -1,5 +1,5 @@
 # ============================================================================
-# Cline AI Rules Installer — Windows (PowerShell)
+# Cline Rules Installer — Windows (PowerShell)
 # Idempotent: safe to run multiple times. Only replaces targeted files.
 # ============================================================================
 
@@ -31,7 +31,7 @@ $FeatureSupport = if ($IsCore) { "Full (supports && and ||)" } else { "Standard 
 # --- Header ---
 Write-Host ""
 Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║   Cline AI Rules v2.0.1 — Installer          ║" -ForegroundColor Cyan
+Write-Host "  ║   Cline Rules v2.0.2 — Installer             ║" -ForegroundColor Cyan
 Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host "    Detected Shell:  $ShellType" -ForegroundColor DarkGray
 Write-Host "    Chaining Style:  $FeatureSupport" -ForegroundColor DarkGray
@@ -39,7 +39,7 @@ Write-Host ""
 
 # --- Uninstall mode ---
 if ($Uninstall) {
-    Write-Host "  Uninstalling Cline AI Rules..." -ForegroundColor Yellow
+    Write-Host "  Uninstalling Cline Rules..." -ForegroundColor Yellow
     $dirsToRemove = @($RulesDir, $WorkflowsDir, $SkillsDir)
     foreach ($dir in $dirsToRemove) {
         if (Test-Path $dir) {
@@ -137,7 +137,7 @@ if (Test-Path $templatesSrc) {
 # --- Summary ---
 Write-Host ""
 Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "  ║   Installation complete! (v2.0.1)            ║" -ForegroundColor Green
+Write-Host "  ║   Installation complete! (v2.0.2)            ║" -ForegroundColor Green
 Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
 Write-Host "    Rules:     $RulesDir"

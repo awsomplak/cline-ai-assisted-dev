@@ -14,6 +14,15 @@ All artifact paths are relative to the CURRENT PROJECT ROOT. Before any operatio
 If `./.ai/artifacts/` directory does not exist, create it silently along with:
 - `./.ai/artifacts/registry.md` with header `# Plan Registry` and an empty table
 
+## Plan Mode Bootstrap (Mandatory)
+
+Before ANY plan-related operation (e.g., `create plan`, `start phase {N}`, `follow rules` with an active plan), you **MUST** verify the directory structure exists:
+- `./.ai/`
+- `./.ai/memory-bank/`
+- `./.ai/artifacts/`
+- `./.ai/artifacts/registry.md`
+If any of these are missing, create them silently before proceeding. This ensures global rules are strictly followed from the first interaction.
+
 ## Uninitialized Recovery Protocol
  
 If a command like `follow rules` or `start phase {N}` is executed but no active plan is registered (⏹️) in `./.ai/artifacts/registry.md`:
@@ -103,84 +112,89 @@ Tasks must be organized by phases:
 Optional annotations for smarter task execution:
 
 ### Dependencies
-Use `→ depends:` to mark tasks that require other tasks to be completed first:
-```markdown
-- [ ] Task 1: Create User model
-- [ ] Task 2: Create auth middleware
-  → depends: Task 1
-- [ ] Task 3: Add login endpoint
-  → depends: Task 1, Task 2
-```
-**Execution rule:** Before starting a task with `→ depends:`, verify all listed dependencies are marked `[x]` or `[—]` (skipped). If not, skip to the next eligible task within the same phase. You MUST loop back and re-evaluate skipped tasks before concluding the phase to ensure out-of-order tasks are completed once their dependencies are met.
-**Dependency Cascade Fallback:** If you loop through all remaining tasks and NONE of them are eligible due to unmet dependencies, STOP and notify the user of a "Dependency Cascade Failure".
-
-### Conditional Tasks
-Use `? if:` for tasks that only apply under certain conditions:
-```markdown
-- [ ] Task 4: Add PostgreSQL-specific indexes
-  ? if: patterns.md shows PostgreSQL
-- [ ] Task 5: Add SQLite fallback
-  ? if: patterns.md shows SQLite
-```
-**Evaluation rule:** Check the condition against memory bank files or project state. If false, mark the task `[—]` (skipped) and move on.
+Use `→ depends:` to mark tasks that require other tasks to be completed first.
 
 ### Task Status Markers
 
-| Marker | Meaning |
-|--------|----------|
-| `[ ]` | Pending |
-| `[x]` | Completed and verified |
-| `[x✓]` | Completed with test pass |
-| `[x!]` | Completed but with warnings |
-| `[!]` | Failed — requires user intervention |
-| `[—]` | Skipped — conditional task that does not apply |
+The following markers are used in tasks.md:
+- `[ ]` - Pending
+- `[x]` - Completed and verified
+- `[x✓]` - Completed with test pass
+- `[x!]` - Completed but with warnings
+- `[!]` - Failed — requires user intervention
+- `[—]` - Permanently Skipped — conditional task that does not apply OR user-instructed skip (terminal, never re-evaluate)
+- `[⏳]` - Deferred — dependencies not met (will be re-evaluated at phase end)
+
+### Dependency Execution Rule
+
+**Execution rule:** Before starting a task with `→ depends:`, verify all listed dependencies are marked `[x]` or `[—]` (skipped). If not, skip to the next eligible task within the same phase. If a task is skipped due to unmet dependencies, mark it `[⏳]` (deferred) not `[—]`. You MUST loop back and re-evaluate **ONLY tasks marked `[⏳]`** before concluding the phase to ensure out-of-order tasks are completed once their dependencies are met. **NEVER re-evaluate `[—]` (permanently skipped) tasks.**
+
+**Dependency Cascade Fallback:** If you loop through all remaining tasks and NONE of them are eligible due to unmet dependencies, STOP and notify the user of a "Dependency Cascade Failure".
+
+### Conditional Tasks
+Use `? if:` for tasks that only apply under certain conditions.
+
+**Evaluation rule:** Check the condition against memory bank files or project state. If false, mark the task `[—]` (permanently skipped) and move on. **Never re-evaluate `[—]` tasks.**
 
 ## Phase Execution Rules (SINGLE SOURCE OF TRUTH)
+
 When implementing a plan, strictly follow these rules:
+
+### Next Phase Resolution Protocol
+When the user says "start next phase" (without specifying a number):
+1. Read `tasks.md` (the single source of truth).
+2. Find the first `## Phase N` where ANY task is still `[ ]` or `[⏳]`.
+3. Use that phase number as the target.
+
+### Execution Steps
+
 1. Execute ONE phase at a time
-    - Identify the first phase with incomplete tasks (`[ ]`)
+    - Identify the first phase with incomplete tasks (`[ ]` or `[⏳]`)
     - **Phase Verification Gate**: Before executing any phase command (e.g., `start phase {N}`):
       - Read `tasks.md`.
       - If Phase {N-1} contains any remaining `[ ]` or `[!]` tasks, you MUST immediately halt and alert the user: *"🛑 Cannot start Phase {N}. Phase {N-1} still has incomplete or failed tasks. Resolve these first or instruct me to skip them `[—]`."*
     - Implement ONLY that phase's tasks
     - Do not read or prepare tasks from future phases
 2. Mark completion in real-time
-    - Change `[ ]` to `[x]` in tasks.md as each task finishes
+    - Change `[ ]` or `[⏳]` to `[x]` in tasks.md as each task finishes
     - **Batching**: You may complete multiple small, related tasks in one go and update `tasks.md` in a single save before moving to the next major task or finishing the phase.
-3. Stop after phase completion
-    - When all tasks in current phase are `[x]`, STOP
+3. ⛔ ABSOLUTE STOP after phase completion
+    - When all tasks in current phase are `[x]`, you MUST STOP.
+    - You MUST NOT read, prepare, or execute ANY task from the next phase. You MUST NOT continue implementation.
+    - Your ONLY permitted actions are: (1) update memory bank, (2) display completion message, (3) ask for confirmation.
+    - **Mandatory Sentinel**: Your phase completion output MUST include this exact line: `🛑 PHASE GATE: Awaiting user confirmation.`
+4. Update memory bank as a BLOCKING GATE
+    - **MANDATORY**: You MUST update `./.ai/memory-bank/progress.md` BEFORE displaying the phase-complete message.
+    - Add entry: `[YYYY-MM-DD HH:MM] Phase {N} completed: {phase goal}. {brief summary of changes}`
+    - The phase is NOT considered complete until `progress.md` is written.
+5. Require explicit confirmation
     - Display: "✅ Phase {N}: {phase goal} completed. Tasks: {completed}/{total}."
-4. Require explicit confirmation
     - If there are remaining phases, ask: "Phase {N} complete. Proceed with Phase {N+1}: {next phase goal}?"
+    - **NEVER interpret silence as confirmation.** NEVER auto-proceed.
+    - Wait for user to explicitly say "yes", "proceed", "continue", or similar.
     - If this is the final phase, do NOT ask to proceed. Instead, state that the implementation is complete and move to final verification.
-    - Wait for user to say "yes", "proceed", "continue", or similar (if not final phase).
-    - If user says "no" or "wait", stop and let them review
-5. Update memory bank after each phase
-    - Add entry to `./.ai/memory-bank/progress.md`: `[YYYY-MM-DD HH:MM] Phase {N} completed: {phase goal}. {brief summary of changes}`
 6. Handle task failures
      - If a task fails (file write error, test failure, build break), mark it `[!]` in tasks.md
      - STOP immediately — do not continue to the next task
      - Display: "❌ Task {N} failed: {brief reason}. How would you like to proceed?"
      - Wait for user instruction (retry, skip, abort phase)
-     - **If the user instructs you to skip the task**, you MUST change its marker from `[!]` to `[—]` (skipped) in tasks.md so the plan can eventually be completed.
 7. On final phase completion
     - **BEFORE updating registry, verify** that ALL tasks across ALL phases in `tasks.md` are marked `[x]`, `[x✓]`, `[x!]`, or `[—]` (skipped)
-    - If any `[ ]` or `[!]` task remains, STOP and flag: "Cannot mark plan complete — Phase {N}, Task {M} is still open. Resolve it first."
+    - If any `[ ]`, `[⏳]`, or `[!]` task remains, STOP and flag: "Cannot mark plan complete — Phase {N}, Task {M} is still open. Resolve it first."
     - If any `[x!]` tasks exist, display: "⚠️ Plan has {count} task(s) with warnings:" followed by a brief list. Ask: "Mark plan complete despite warnings?" Wait for user confirmation.
     - **Trigger the `/retrospective` workflow** automatically (see `Cline/Workflows/retrospective.md`) to extract reusable patterns before closing the plan.
-    - Only after confirming all tasks are resolved (and warnings acknowledged) and retrospective is complete, update `registry.md`: change plan status to ✅
-8. Walkthrough Protocol (Token Optimization)
-    - **Never** write long walkthroughs or change lists in the chat window. Doing so wastes context and tokens.
-    - **Write to Disk**: Always write a detailed `walkthrough.md` directly into the current active plan's directory: `./.ai/artifacts/{uuid}/walkthrough.md`.
-    - **Compact Response**: Output only a 1-2 sentence compact message in the chat pointing to the written file: *"I have saved a detailed walkthrough of all accomplishments to `./.ai/artifacts/{uuid}/walkthrough.md`."*
-    - **Markdown File Path Formatting**: When generating file links in any markdown document (e.g. plans, tasks, walkthroughs):
-      - **Never** URL-encode paths (do not use `%20` for spaces).
-      - **Relative Path Priority**: To guarantee perfect cross-platform portability across IDEs, browsers, external previewers, and CI environments, you **MUST** prioritize relative paths (e.g. `[patterns.md](../../memory-bank/patterns.md)`) over absolute paths whenever referencing files within the active project.
-      - **Relative Path Depth Formula Guide (Off-by-One Depth Prevention)**:
-        - Files inside project root referenced from `tasks.md` or `plan.md` (which reside inside `./.ai/artifacts/{uuid}/`): `../../../filename` (e.g. `../../../package.json`)
-        - Files inside project `src/` folder from `tasks.md` or `plan.md`: `../../../src/filename`
-        - Files inside memory bank from `tasks.md` or `plan.md`: `../../memory-bank/filename` (e.g. `../../memory-bank/patterns.md`)
-      - **Fallback schemes**: Absolute schemes (e.g. `file:///d:/Project/IDE/Cline AI Rules by AWLab-ID/...` with unencoded spaces) should be reserved strictly as a secondary fallback or when absolute referencing is explicitly required.
+
+## Bug Report Protocol
+
+When the user reports a bug or error regarding the project:
+- If the plan is IN-PROGRESS (⏹️): Add bug-fix task(s) to the current active phase
+- If the plan is COMPLETED (✅): Reactivate the plan and add a new phase for fixes
+
+### Walkthrough Protocol (Token Optimization)
+
+- Never write long walkthroughs in the chat window
+- Write detailed `walkthrough.md` to `./.ai/artifacts/{uuid}/walkthrough.md`
+- Output only a 1-2 sentence compact message in chat pointing to the file
 
 ## Verification Protocol
 
@@ -202,21 +216,19 @@ Use the appropriate marker based on verification depth:
 
 ### Phase Gate
 Before declaring a phase complete:
-- All tasks must be at least `[x]` (or `[—]` if skipped)
+- All tasks must be at least `[x]` (or `[—]` if permanently skipped)
 - If any test-relevant task is only `[x]` (not `[x✓]`) and a test framework exists, warn: "Phase {N} complete but {count} tasks unverified by tests. Run tests?"
 
-## Plan Activation (Handled by /switch-plan Workflow)
+## Plan Activation
 
-Use the `/switch-plan` workflow to change the active plan. Do not manually edit the registry outside that workflow.
+Use the `/switch-plan` workflow to change the active plan.
 
 ## Registry Integrity
 
-The registry (`registry.md`) is the single source of truth for plan discovery. To maintain integrity:
-
-- **Automated changes expected.** The `/switch-plan` workflow, `plan-creator` skill, and Phase Execution Rules all modify registry.md as part of their normal operation. These rule-driven changes are correct and expected.
-- **Manual ad-hoc edits discouraged.** Do not hand-edit registry.md outside of a workflow or rule-defined operation. If you need to correct the registry, use `/update-memory` to reconcile.
-- **External modifications** (e.g., git merges) can cause the registry to desync with `./.ai/artifacts/{uuid}/` directories. If you detect a mismatch, use `/update-memory` to flag and reconcile.
-- **Orphan detection:** If a plan's files are deleted externally but its registry entry remains, mark the entry as ✅ or ⏸️. Never delete registry entries — the history is valuable context.
+The registry (`registry.md`) is the single source of truth for plan discovery. The `/switch-plan` workflow, `plan-creator` skill, and Phase Execution Rules may modify `registry.md` BUT ONLY:
+- Upon explicit user confirmation of plan switches
+- Upon final completion of a phase (all non-skipped tasks verified)
+- NEVER during speculative or intermediate state changes
 
 ## Constraints
 
