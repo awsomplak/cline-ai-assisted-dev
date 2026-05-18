@@ -4,8 +4,9 @@ description: >
   Creates a new structured implementation plan. ONLY activate when the user
   explicitly requests a new plan with phrases like "create a new plan",
   "generate plan for", "make a detailed plan to...", "break down tasks for...",
-  or uses the command "create plan". Do NOT activate for questions about existing
-  plans, status inquiries, or memory updates. Operates on the active project workspace only.
+  "create plan fo", "plan fo", "make plan fo", or uses the command "create plan".
+  Do NOT activate for questions about existing plans, status inquiries, or memory updates.
+  Operates on the active project workspace only.
 ---
 
 # plan-creator
@@ -46,10 +47,12 @@ Activate this skill when the user explicitly requests a **new** plan using the t
       - Character set: `[a-zA-Z0-9]` (62 possible characters per position)
       - Generation: Random (not sequential)
     - Ask user for a concise one-line summary of the plan
-    - Create directory `./.ai/artifacts/{uuid}/`
+    - **CRITICAL: STOP HERE AND WAIT FOR THE USER's RESPONSE.** Do NOT proceed to Step 7 until the user has provided the summary.
+    - **EXCEPTION**: If the user has already provided a plan summary, a clear feature goal, or specific details in their triggering prompt (e.g. 'create a plan for user login' or 'plan for refactoring models'), or if a summary has been verbally discussed in chat, **bypass the stop-and-wait check entirely**. Synthesize the summary directly from the user's prompt and proceed immediately to Step 7.
 
 7. **Create Plan Files**
-    - **Template matching:** Check if the user's request matches a template in this skill's `templates/` directory:
+    - After the user provides the summary, create directory `./.ai/artifacts/{uuid}/`
+    - **Template matching:** Check if the user's request matches a template in the global directory `~/.agents/skills/plan-creator/templates/` (or fallback to local `Cline/Skills/plan-creator/templates/`):
 
       | Template | Trigger Keywords |
       |----------|------------------|
@@ -60,7 +63,8 @@ Activate this skill when the user explicitly requests a **new** plan using the t
       | `bugfix.md` | fix, debug, broken, failing, error |
       | `integration.md` | integrate, connect, API integration, third-party |
 
-    - If a template matches: load the skeleton, then **customize** phases and tasks based on project context from `patterns.md`
+    - If multiple templates match trigger keywords, prioritize the one whose YAML frontmatter `project_types` and `frameworks` match the current `patterns.md`.
+    - If a template matches: read the skeleton from the hardcoded path, then **customize** phases and tasks based on project context from `patterns.md`
     - If no template matches: generate plan from scratch (original behavior)
     - Write `plan.md` with Overview, Approach, and Expected Outcomes sections
     - Write `tasks.md` with phases and ordered checklist per `02-plan-artifacts.md` (Tasks Format and Extended Task Format). Use `→ depends:` and `? if:` markers where appropriate.

@@ -1,4 +1,11 @@
-# Template: Migration / Upgrade
+---
+project_types: [backend, web]
+frameworks: [any]
+last_used: 2026-05-18
+success_count: 0
+---
+
+# Template: Migration / Schema Update
 
 ## Trigger Keywords
 `migrate`, `upgrade`, `version bump`, `refactor schema`, `database migration`, `breaking change`, `legacy`, `modernize`

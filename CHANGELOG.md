@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.0.1] - 2026-05-18
+
+### Added
+- **System Authority Framework** (`00-meta.md`) — establishes a strict hierarchy for resolving conflicts between rules and workflows. All rules now declare their authority.
+- **Model Router** (`07-model-router.md`) — auto-classifies tasks as Simple (🟢), Medium (🟡), or Complex (🔴), enabling dynamic escalation for local LLM routing and token awareness.
+- **Model-Adaptive Loading Modes** (`01-memory-bank.md`) — dynamic toggling between Compact (≤16K), Standard (16K-128K), and Full (≥128K) modes to prevent context window explosion on smaller models.
+- **Quick Index & Relationship Detection** (`06-project-scanner.md`) — scanner now pre-maps core concepts and relationships by reading only the first 20 lines of imports, completely avoiding bulk `view_file` context explosions.
+- **Cross-Session Learning Workflow** (`retrospective.md`) — triggered after a plan successfully completes, extracting reusable architectures and auto-updating plan templates with YAML metadata (`success_count`).
+- **Case-Insensitive Lowercase UUIDs** (`02-plan-artifacts.md`, `SKILL.md`) — all plan UUIDs are now strictly generated as lowercase alphanumeric (`[a-z0-9]{8}`). This prevents case-insensitive filesystem collisions on Windows/macOS and simplifies developer CLI interaction.
+- **Strict Linear Phase checklists** (`02-plan-artifacts.md`) — streamlined task checklists to enforce sequential execution inside phases. This removes complex non-linear topological sorting overhead and resolves potential "Dependency Cascade Failures" in complex plans.
+- **Native IDE Tool Priority Protocol** (`07-model-router.md`) — mandates that agents prioritize native IDE/system tools (`view_file`, `replace_file_content`, `grep_search`, `write_to_file`) over raw terminal command scripts (`cat`, `sed`, `grep`, `echo`), accelerating file manipulation and avoiding terminal permission blocks.
+
+### Changed
+- **Task Status Update Bloat Fixed** (`02-plan-artifacts.md`) — explicitly allows batching of small, related task updates instead of saving `tasks.md` after every single checkbox, saving massive tokens.
+- **Command Validation Silenced** (`05-environment.md`) — forces the command verification protocol to be executed silently in the AI's thought process rather than over-narrating in the chat window.
+- **Dangling Token Thresholds Cleaned Up** (`04-commands.md`) — removed outdated context budget point threshold references from `summarize session`.
+- **Install Scripts Upgraded** (`install.ps1`, `install.sh`) — updated headers to v2.0.1 and bumped verification check counts to 8 rules (`00-07`).
+- **Plan Templates Documentation Added** (`README.md`) — resolved a documentation gap by adding a detailed **Plan Templates** section, describing all six pre-built skeletons and how keyword-matching operates in the `plan-creator` skill.
+
+### Fixed
+- **Hallucination Vectors Closed** — explicitly added fallback prompts to `brief.md` and `context.md` in `01-memory-bank.md` to prevent hallucinating content when projects lack a README.
+- **Workflow Turn-Yielding Enforced** (`SKILL.md`, `retrospective.md`) — added rigid `STOP AND WAIT` directives after plan creation and retrospective requests, eliminating hallucinated user responses.
+- **Circular Dependency Deadlock** (`02-plan-artifacts.md`) — added an explicit fallback for when tasks skip endlessly due to unmet `→ depends:` chains, and allowed skipped conditional tasks `[—]` to count as satisfied prerequisites.
+- **Out-of-Order Dependency Loops Resolved** (`02-plan-artifacts.md`) — mandated that agents loop back and re-evaluate skipped tasks within a phase once their dependencies are met, preventing premature phase exits.
+- **Task Failure Skip Trap Avoided** (`02-plan-artifacts.md`) — instructed agents to change failed tasks `[!]` to `[—]` if skipped, preventing blockers during final verification.
+- **Template Path Ambiguity** (`SKILL.md`) — hardcoded the fallback global/local path structure for resolving templates to prevent agent looping.
+- **Lazy-Load Table Protection** (`update-memory.md`) — added strict warning to read `decisions.md` before appending to protect markdown table formatting from corruption.
+- **Bash Empty-Operand Age Check Crash** (`01-memory-bank.md`) — resolved the macOS/Linux age check syntax error when `environment.md` is missing on fresh workspaces (added robust fallback `|| echo 0` and file-existence check).
+- **PowerShell File-Not-Found Exception** (`01-memory-bank.md`) — wrapped the Windows environment check in `Test-Path` to prevent terminating shell errors on uninitialized clean projects.
+- **Git Branch Desynchronization Trap** (`.gitignore`) — adjusted `.gitignore` to allow committing planning documents, decisions, and patterns. This enables team collaboration and branch-synchronized memory states, eliminating architectural hallucinations on branch changes while maintaining machine-specific local privacy (`environment.md` and temporary command streams are still ignored).
+- **Retrospective Turn-Yield Memory Loss** (`retrospective.md`) — fixed a state-machine loophole where blank AI agents lose their state after yielding the turn for feedback. Introduced a transition status `🔄` (Review/Retrospective) in the plan registry to persist the review state across turns.
+
 ## [2.0.0] - 2026-05-17
 
 ### Added

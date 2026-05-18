@@ -9,12 +9,12 @@
     - Identify which memory bank files need updating
 
 2. **Update Relevant Files**
-    - `environment.md`: If shell/OS has changed or `Last detected:` is older than 7 days, re-run detection per `05-environment.md`
+    - `environment.md`: If shell/OS has changed or `Last detected:` is older than 14 days, re-run detection per `05-environment.md`
     - `brief.md`: New or changed requirements
     - `context.md`: New understanding of problems or users
     - `patterns.md`: Architecture decisions or pattern changes
     - `progress.md`: Completed work, blockers, next steps
-    - `decisions.md`: New architectural or technology decisions made during the session (append to table)
+    - `decisions.md`: New architectural or technology decisions made during the session (WARNING: this is a lazy-loaded file. You MUST read the file first to understand its table structure before appending, otherwise you will corrupt the markdown format)
 
 3. **Append Strategy**
     - Add new information to existing files

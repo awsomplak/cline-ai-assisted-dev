@@ -1,3 +1,9 @@
+---
+project_types: [web, mobile, backend]
+frameworks: [any]
+last_used: 2026-05-18
+success_count: 0
+---
 # Template: Authentication Flow
 
 ## Trigger Keywords

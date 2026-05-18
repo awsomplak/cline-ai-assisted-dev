@@ -1,4 +1,11 @@
-# Template: Refactor
+---
+project_types: [web, mobile, backend, script, tool]
+frameworks: [any]
+last_used: 2026-05-18
+success_count: 0
+---
+
+# Template: Refactor / Cleanup
 
 ## Trigger Keywords
 `refactor`, `clean up`, `reorganize`, `optimize`, `restructure`, `technical debt`, `code quality`

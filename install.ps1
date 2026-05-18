@@ -22,11 +22,19 @@ $SrcRules     = Join-Path $ScriptDir "Cline\Rules"
 $SrcWorkflows = Join-Path $ScriptDir "Cline\Workflows"
 $SrcSkill     = Join-Path $ScriptDir "Cline\Skills\plan-creator"
 
+# --- Version and Shell Detection ---
+$PSVersion = $PSVersionTable.PSVersion
+$IsCore = $PSVersion.Major -ge 6
+$ShellType = if ($IsCore) { "PowerShell Core (v$PSVersion)" } else { "Windows PowerShell (v$PSVersion)" }
+$FeatureSupport = if ($IsCore) { "Full (supports && and ||)" } else { "Standard (uses conditional checks)" }
+
 # --- Header ---
 Write-Host ""
 Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║   Cline AI Rules v2.0 — Installer            ║" -ForegroundColor Cyan
+Write-Host "  ║   Cline AI Rules v2.0.1 — Installer          ║" -ForegroundColor Cyan
 Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "    Detected Shell:  $ShellType" -ForegroundColor DarkGray
+Write-Host "    Chaining Style:  $FeatureSupport" -ForegroundColor DarkGray
 Write-Host ""
 
 # --- Uninstall mode ---
@@ -129,7 +137,7 @@ if (Test-Path $templatesSrc) {
 # --- Summary ---
 Write-Host ""
 Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "  ║   Installation complete!                      ║" -ForegroundColor Green
+Write-Host "  ║   Installation complete! (v2.0.1)            ║" -ForegroundColor Green
 Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
 Write-Host "    Rules:     $RulesDir"
@@ -138,6 +146,6 @@ Write-Host "    Skill:     $SkillsDir"
 Write-Host ""
 Write-Host "  Next steps:" -ForegroundColor Cyan
 Write-Host "    1. Open your IDE (VS Code, JetBrains, etc.)"
-Write-Host "    2. Click the Rules icon in Cline to verify 6 rule files (01-06) are ON"
+Write-Host "    2. Click the Rules icon in Cline to verify 8 rule files (00-07) are ON"
 Write-Host "    3. Type 'follow rules' to start a session"
 Write-Host ""

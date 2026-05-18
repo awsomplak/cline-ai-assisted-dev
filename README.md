@@ -18,12 +18,14 @@ This system transforms Cline into a project-aware development assistant that:
 cline-ai-assisted-dev/
 ├── Cline/
 │   ├── Rules/
+│   │   ├── 00-meta.md
 │   │   ├── 01-memory-bank.md
 │   │   ├── 02-plan-artifacts.md
 │   │   ├── 03-token-strategies.md
 │   │   ├── 04-commands.md
 │   │   ├── 05-environment.md
-│   │   └── 06-project-scanner.md
+│   │   ├── 06-project-scanner.md
+│   │   └── 07-model-router.md
 │   ├── Skills/
 │   │   └── plan-creator/
 │   │       ├── SKILL.md
@@ -36,6 +38,7 @@ cline-ai-assisted-dev/
 │   │           └── integration.md
 │   ├── Workflows/
 │   │   ├── plan-status.md
+│   │   ├── retrospective.md
 │   │   ├── switch-plan.md
 │   │   └── update-memory.md
 │   └── portability/
@@ -55,12 +58,14 @@ cline-ai-assisted-dev/
 
 ```markdown
 ~/Documents/Cline/Rules/
+├── 00-meta.md
 ├── 01-memory-bank.md
 ├── 02-plan-artifacts.md
 ├── 03-token-strategies.md
 ├── 04-commands.md
 ├── 05-environment.md
-└── 06-project-scanner.md
+├── 06-project-scanner.md
+└── 07-model-router.md
 ```
 
 **Global Workflows:**
@@ -68,6 +73,7 @@ cline-ai-assisted-dev/
 ```markdown
 ~/Documents/Cline/Workflows/
 ├── plan-status.md
+├── retrospective.md
 ├── switch-plan.md
 └── update-memory.md
 ```
@@ -174,7 +180,7 @@ Copy-Item -Path "Cline\Workflows\*.md" -Destination "$env:USERPROFILE\Documents\
 ### 2. Verify in Cline
 
 - Open Cline in IDE (VS Code, JetBrains, etc.)
-- Click the **Rules** icon (near the chat input) to confirm all 6 rule files (01–06) appear and are toggled **ON**
+- Click the **Rules** icon (near the chat input) to confirm all 8 rule files (00–07) appear and are toggled **ON**
 - Workflows are automatically recognized when placed in the correct directory
 - The `plan-creator` skill loads automatically when its trigger phrases are detected
 
@@ -200,11 +206,24 @@ Or simply say create plan. This will:
 2. Detect your environment (OS, shell) automatically
 3. Scan your project using the **Fingerprint Protocol** (`06-project-scanner.md`) and auto-populate memory-bank files
 4. Match your request against **plan templates** (CRUD, auth, migration, refactor, bugfix, integration) for smarter generation
-5. Generate a plan with 8-char randomized alphanumeric UUID and phase-organized tasks
+5. Generate a plan with 8-char randomized lowercase alphanumeric UUID and phase-organized tasks
 6. Open all generated files in your editor
 7. Stop - no code is executed
 
 > **Note:** There is no separate `/create-plan` workflow file. The plan creation is handled entirely by the skill (`plan-creator`), following the rules in `02-plan-artifacts.md`.
+
+### Plan Templates
+
+To streamline plan generation and reduce input token overhead by **30-50%**, the `plan-creator` skill automatically matches your natural language request against six built-in plan templates:
+
+*   📦 **Feature CRUD** (`feature-crud.md`): Used for database models, migrations, RESTful APIs/controllers, UI forms, list pagination, and basic resource management.
+*   🔒 **Authentication Flow** (`auth-flow.md`): Used for registration/login controllers, password hashing, session/cookie handling, token-based verification, UI login screens, and secure route middleware.
+*   🗄️ **Database Migration** (`migration.md`): Used for schema modifications, table creations, indices, foreign keys, rollback seeds, data integrity checks, and dry-run tests.
+*   🛠️ **Code Refactor** (`refactor.md`): Used for addressing technical debt, improving code readability, modularization, applying design patterns, performance optimizations, and regression testing.
+*   🐛 **Bug Fix** (`bugfix.md`): Used for diagnostics, reproducing errors, writing failing test assertions, resolving the root cause, and regression testing.
+*   🔌 **Third-Party Integration** (`integration.md`): Used for external API integrations, SDK connections, webhook processing, mock service adapters, and secure credential handling.
+
+The skill scans keywords in your prompt (e.g., `"add auth"`, `"fix error"`, `"create admin controller"`) to instantly load and pre-fill the corresponding skeleton structure.
 
 ### Checking Plan Status
 
@@ -281,7 +300,8 @@ Each project maintains its own `.ai/` directory. Rules are global but operations
 | `follow rules`        | Load active plan's `tasks.md`; on-demand memory loading |
 | `create plan`         | Activate `plan-creator` skill to generate a new plan    |
 | `/plan-status`        | Show registry with active plan highlighted              |
-| `/switch-plan {uuid}` | Activate a different plan (8-character alphanumeric)   |
+| `/switch-plan {uuid}` | Activate a different plan (8-character lowercase alphanumeric)   |
+| `/retrospective`      | Extract reusable patterns and knowledge from a completed plan |
 | `/update-memory`      | Sync memory bank with project state                     |
 | `start phase {N}`     | Execute Phase N of the active plan                      |
 | `summarize session`   | Save state to progress.md, prepare for context reset    |
@@ -320,6 +340,15 @@ Tasks are organized by phases (see `02-plan-artifacts.md` for full specification
 | `[!]` | Failed — requires user intervention |
 | `[—]` | Skipped — conditional task that does not apply |
 
+## Multi-Model Support
+
+The system implements a Model Router (`07-model-router.md`) that categorizes tasks by complexity:
+- 🟢 **Simple** (single file, <50 lines) — suitable for local 1.5B–3B models.
+- 🟡 **Medium** (2-5 files, dependencies) — suitable for local 14B–32B models.
+- 🔴 **Complex** (architecture, 5+ files) — requires frontier models (Claude/GPT).
+
+It includes Model-Adaptive Loading Modes (Compact, Standard, Full) based on context limits, preventing token overflow for smaller models.
+
 ## Token Saving Strategies
 
 - **Lazy loading:** Memory files loaded on-demand, not at startup
@@ -350,7 +379,10 @@ The `.ai/` directory structure is tool-agnostic and works with any AI assistant 
 ## Requirements
 
 - Cline extension (VS Code or Jetbrains)
-- Compatible AI model with tool-calling support (Claude 3.5 Sonnet recommended, or local models like qwen2.5-coder:14b via Ollama)
+- Compatible AI model with tool-calling support. Recommended pairings:
+  - 🟢 Simple Tasks: Local models (e.g., qwen2.5-coder:3b)
+  - 🟡 Medium Tasks: Local models (e.g., qwen2.5-coder:14b)
+  - 🔴 Complex Tasks/Planning: Frontier models (Claude 3.5 Sonnet, GPT-4o)
 
 ## License
 
