@@ -1,19 +1,15 @@
+<!-- → authority: 00-meta.md -->
 # Environment Detection Rule
 
-## CRITICAL: Pre-Execution Verification
+## CRITICAL: Pre-Execution Verification & Directory Match
 
-**Before ANY `execute_command` call, Cline MUST verify the environment is known.** This is non-negotiable and takes precedence over all other rules.
+**Before ANY terminal command execution, Cline MUST verify both environment and workspace path alignment.** This takes absolute precedence over all other command-generation rules.
 
-1. Check if environment is cached (session memory or in `./.ai/memory-bank/environment.md`)
-2. If unknown, perform detection immediately:
-   - Run detection procedure (see Detection & Storage below)
-   - Write to `./.ai/memory-bank/environment.md`
-   - Cache the result for the session
-3. Only after environment is confirmed, generate the command using the correct shell syntax
-4. If a command fails with `command not found` or `is not recognized`, treat it as potential shell mismatch:
-   - Re-detect the environment
-   - Ask the user if their shell has changed
-   - Update `environment.md` accordingly
+1. **Verify Environment**: Check if environment is cached in session memory or `./.ai/memory-bank/environment.md`. If unknown, perform detection immediately.
+2. **Directory Matching Lock (Multi-Workspace Protection)**: To prevent command execution drift in nested monorepos or multi-workspace IDEs, check if the terminal's active working directory matches the absolute project workspace root. If they mismatch:
+   - Prepend `Set-Location` (PowerShell) or `cd` (Bash/Zsh) command to target the project workspace root, or explicitly enforce the correct relative directory inside the tool invocation.
+3. **Only after environment and path verification are locked**, generate and run the command using correct syntax.
+4. **Failure Handler**: If a command fails due to shell/path mismatches, re-verify the environment and directory alignment instantly before prompting the user.
 
 > **SINGLE SOURCE OF TRUTH:** This file is the definitive authority on environment detection and command generation.
 
@@ -25,16 +21,17 @@ Ensure all shell/terminal commands suggested or executed by Cline are compatible
 **Before every `execute_command` call:**
 
 1. **Read stored shell** from `./.ai/memory-bank/environment.md`.
-2. **Scan the command** against the **Anti-Patterns by Shell** section below. If any anti-pattern matches, STOP and translate using the **Translation Table** before executing.
-3. **If uncertain**, look up the operation in the Translation Table.
-4. **Only after validation passes**, execute the command.
+2. **Silent Validation**: Perform this check silently in your thought process. Do not narrate the validation step to the user to save tokens.
+3. **Scan the command** against the **Anti-Patterns by Shell** section below. If any anti-pattern matches, STOP and translate using the **Translation Table** before executing.
+4. **If uncertain**, look up the operation in the Translation Table.
+5. **Only after validation passes**, execute the command.
 
 > **FAILURE MODE:** If you skip validation and the command fails, treat it as a bug in your own process. Re-validate, translate, and retry.
 
 ## Detection & Storage
 
 1. **On every session start (when `follow rules` is invoked)**, check if `./.ai/memory-bank/environment.md` exists and is up-to-date:
-   - If missing or older than 7 days, perform detection.
+   - If missing or older than 14 days, perform detection.
    - If present and recent, use the stored values without asking.
 
 2. **Detection procedure (silent, no user confirmation)**:
@@ -49,7 +46,7 @@ Ensure all shell/terminal commands suggested or executed by Cline are compatible
    - Operating System: {detected_os}
    - Shell: {detected_shell}
    - Terminal: VS Code integrated terminal
-   - Last detected: {current_timestamp}
+   - Last detected: YYYY-MM-DD
    ```
 
 4. **After detection, explicitly note to yourself (the AI) the environment** so you never issue an incompatible command.
@@ -62,6 +59,8 @@ Ensure all shell/terminal commands suggested or executed by Cline are compatible
 - When in doubt, re-check `./.ai/memory-bank/environment.md` before running or suggesting any command.
 
 ### Shell Command Translation Table
+
+> **Note on File Searching:** ALWAYS prioritize native agent tools (like `grep_search` or specific MCP extensions) over shell commands for reading or searching files. Only use `Select-String` or `grep` if native tools are unavailable or fail.
 
 Use this table to translate common operations between shells:
 
@@ -89,8 +88,8 @@ Use this table to translate common operations between shells:
 | Time measurement | `Measure-Command { script }` | `time script` |
 | Terminate process by name | `Stop-Process -Name name` | `kill PID` |
 | Run executable with spaces | `& "C:\Program Files\app\app.exe"` | `"/path/to/app"` |
-| Command chaining (success) | `command1; if ($?) { command2 }` | `command1 && command2` |
-| Command chaining (failure fallback) | `if ($LASTEXITCODE -ne 0) { fallback }` | `command1 || fallback` |
+| Command chaining (success) | `command1 && command2` (if `pwsh` 7+) or `command1; if ($?) { command2 }` (if `powershell` 5.1) | `command1 && command2` |
+| Command chaining (failure fallback) | `command1 || fallback` (if `pwsh` 7+) or `if ($LASTEXITCODE -ne 0) { fallback }` (if `powershell` 5.1) | `command1 || fallback` |
 | Redirect stderr to stdout | `command 2>&1` or `command *>&1` | `command 2>&1` |
 | Check if file exists | `Test-Path path` | `test -f path` or `[ -f path ]` |
 | Check exit code | `$LASTEXITCODE` | `$?` or `${PIPESTATUS[@]}` |
@@ -100,16 +99,15 @@ Use this table to translate common operations between shells:
 **On PowerShell, NEVER use:**
 - `ls` (unless aliased, ambiguous on some systems — prefer `Get-ChildItem` or `dir`)
 - `cat` (works as alias but not universal — prefer `Get-Content`)
-- `mkdir -p` (PowerShell interprets `-p` differently — use `New-Item -ItemType Directory -Force -Path`)
+- `mkdir -p` (PowerShell interprets `-p` as an invalid parameter and throws an error — use `mkdir path` or `New-Item -ItemType Directory -Force -Path path`. Note that `mkdir` in PowerShell is a built-in wrapper that automatically creates parent folders recursively by default, making `-p` redundant).
 - `rm -rf` (PowerShell uses different flags — use `Remove-Item -Recurse -Force`)
 - `cp`, `mv` without proper flag matching — use `Copy-Item`, `Move-Item`
 - `/home/user` or `~/` paths without translation — use `$env:USERPROFILE`
 - `$HOME` without translation — use `$env:USERPROFILE`
 - `touch` (not a native PowerShell command — use `New-Item -ItemType File`)
 - `grep` (not a native PowerShell command — use `Select-String`)
-- `\` for line continuation (use backtick `` ` `` instead)
-- `&&` for command chaining (use `if ($?) { ... }` instead)
-- `||` for fallback (use `if ($LASTEXITCODE -ne 0) { ... }` instead)
+- Line continuation with backticks `` ` `` or backslashes `\` in complex chained pipelines (Newlines get stripped/corrupted in agent terminals. Write chained commands as a single line, or save to a temporary script file and run it instead).
+- `&&` or `||` operators under legacy `powershell` 5.1 (Only supported in `pwsh` 7+ — use conditional checks `$LASTEXITCODE` or `$?` under 5.1).
 - `command > /dev/null 2>&1` (use `command *>$null` or `command 2>$null`)
 - `Format-Table`, `Format-List` (Cline can't capture their output — use `Select-Object` instead)
 
@@ -149,10 +147,10 @@ Cline's terminal integration sometimes fails to capture output from complex Powe
 
 3. **If output is still blank**, fall back to file-based capture:
    ```powershell
-   # Write to temp file, then read it
-   your-command | Out-File -FilePath ".ai/temp-output.txt" -Encoding utf8
-   Get-Content ".ai/temp-output.txt"
-   Remove-Item ".ai/temp-output.txt"
+   # Write to temp file, then read it (matches ignored format .tmp-cmd-*)
+   your-command | Out-File -FilePath ".ai/.tmp-cmd-output.txt" -Encoding utf8
+   Get-Content ".ai/.tmp-cmd-output.txt"
+   Remove-Item ".ai/.tmp-cmd-output.txt"
    ```
 
 4. **Keep pipelines short** — prefer 2-3 stages max. Break complex queries into multiple simpler commands.
