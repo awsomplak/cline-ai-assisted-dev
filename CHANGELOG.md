@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.2] - 2026-05-19
+
+### Fixed
+- **Oversimplification Bugs Resolved** (`02-plan-artifacts.md`) — Reinstated critical instructional sub-bullets, execution steps, and markdown templates that were accidentally stripped, restoring the AI's ability to properly execute phases and format registry files.
+- **Infinite Loop Skip Trap** (`02-plan-artifacts.md`) — Introduced the `[⏳]` (Deferred) marker to differentiate tasks skipped due to unmet dependencies from those permanently skipped (`[—]`), preventing infinite re-evaluation loops.
+- **Dependency Cascade Fallback** (`02-plan-artifacts.md`) — Added a safety net to halt execution if a circular or future-phase dependency is encountered, preventing infinite looping at the end of a phase.
+- **Dynamic Loading Budget Safety** (`01-memory-bank.md`) — Added a budget constraint note forcing the AI to prioritize files and defer loading when pre-load heuristics exceed the turn file budget limits.
+- **Native Tool Priority Exception** (`07-model-router.md`) — Explicitly whitelisted PowerShell `New-TimeSpan` and Unix `date +%s` math under the native tool priority rule, resolving the paradox where the AI refused to run required file age checks.
+
 ## [2.0.1] - 2026-05-18
 
 ### Added

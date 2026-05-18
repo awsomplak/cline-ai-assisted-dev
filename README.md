@@ -1,4 +1,4 @@
-# Cline Rules - AI-Assisted Development System by AWLab-ID
+# Cline Rules, Workflows, and Skills - AI-Assisted Development System by AWLab-ID
 
 A comprehensive rules, workflows, and skills system for Cline that provides structured plan management, persistent project memory, and phase-by-phase implementation control without extra tools or plugins.
 
@@ -250,7 +250,7 @@ start phase 1
 The system follows the Phase Execution Rules (centralized in `02-plan-artifacts.md`):
 
 1. Execute only the current phase's tasks
-2. Mark tasks with appropriate markers (`[x]`, `[x✓]`, `[x!]`, `[!]`, `[—]`) in real-time
+2. Mark tasks with appropriate markers (`[x]`, `[x✓]`, `[x!]`, `[!]`, `[—]`, `[⏳]`) in real-time
 3. Stop when the phase is done
 4. Ask for confirmation before proceeding to the next phase
 5. Update `progress.md` after each phase
@@ -338,7 +338,8 @@ Tasks are organized by phases (see `02-plan-artifacts.md` for full specification
 | `[x✓]` | Completed with test pass |
 | `[x!]` | Completed but with warnings |
 | `[!]` | Failed — requires user intervention |
-| `[—]` | Skipped — conditional task that does not apply |
+| `[—]` | Permanently Skipped — conditional task that does not apply OR user-instructed skip |
+| `[⏳]` | Deferred — dependencies not met (will be re-evaluated at phase end) |
 
 ## Multi-Model Support
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Cline AI Rules Installer — macOS / Linux
+# Cline Rules Installer — macOS / Linux
 # Idempotent: safe to run multiple times. Only replaces targeted files.
 # ============================================================================
 
@@ -26,13 +26,13 @@ SRC_WORKFLOWS="$SCRIPT_DIR/Cline/Workflows"
 SRC_SKILL="$SCRIPT_DIR/Cline/Skills/plan-creator"
 
 echo -e "${CYAN}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║   Cline AI Rules v2.0.1 — Installer          ║${NC}"
+echo -e "${CYAN}║   Cline Rules v2.0.2 — Installer             ║${NC}"
 echo -e "${CYAN}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 
 # --- Uninstall mode ---
 if [ "${1:-}" = "--uninstall" ]; then
-    echo -e "${YELLOW}Uninstalling Cline AI Rules...${NC}"
+    echo -e "${YELLOW}Uninstalling Cline Rules...${NC}"
     for dir in "$RULES_DIR" "$WORKFLOWS_DIR" "$SKILLS_DIR"; do
         if [ -d "$dir" ]; then
             rm -rf "$dir"
@@ -122,7 +122,7 @@ fi
 # --- Summary ---
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║   Installation complete! (v2.0.1)            ║${NC}"
+echo -e "${GREEN}║   Installation complete! (v2.0.2)            ║${NC}"
 echo -e "${GREEN}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "  Rules:     $RULES_DIR"

@@ -48,6 +48,10 @@ Do not attempt to guess your context window size. Apply **Standard Mode** global
   - If prompt contains `css`, `style`, `component`, `ui`, `theme` → pre-load `./.ai/memory-bank/patterns.md`.
   - If prompt contains `refactor`, `clean`, `architecture`, `restructure` → pre-load `./.ai/memory-bank/patterns.md` + `./.ai/memory-bank/context.md`.
   - If prompt contains `bug`, `error`, `fail`, `crash`, `issue` → pre-load `./.ai/memory-bank/progress.md`.
+- **Budget Constraint Note**: Dynamic Pre-Loading is subject to the turn file budget (5-file cap, 10-file soft limit). If keyword-triggered pre-loading would exceed these limits, you MUST:
+  1. Prioritize the most relevant 5 files based on keyword match strength
+  2. Log the skipped pre-loads in your reasoning
+  3. Load remaining triggered files in subsequent turns if still relevant
 - **Lazy Loading**: `patterns.md`, `brief.md`, and `context.md` must be loaded *only* when the task scope explicitly expands to require them, unless pre-loaded by the Dynamic heuristics above.
 - **Never** load all memory files at startup unless explicitly asked.
 
@@ -56,6 +60,7 @@ Update relevant memory bank file(s) immediately after:
 - Architectural decisions or pattern changes → `patterns.md`
 - New requirements discovered → `brief.md`
 - Task completion or scope change → `progress.md`
+- Phase completion → `progress.md` (MANDATORY — blocks phase-complete status)
 - Key insights about users/problems → `context.md`
 
 ## Update Rules
