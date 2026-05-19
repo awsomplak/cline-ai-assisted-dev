@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.4] - 2026-05-19
+
+### Added
+- **Rules Compact Profile** (`Cline/portability/.clinerules`) — Single high-density `.clinerules` profile in `Cline/portability/` (achieving ~90% token reduction).
+- **Permissive Q&A Exception** (`02-plan-artifacts.md`) — Refactored the Uninitialized Recovery Protocol to introduce a permissive exception: read-only, exploratory, and diagnostic actions completely bypass active plan locks and registry gates instantly, while code modifications remain strictly gated.
+- **Continuous Phase Execution** (`02-plan-artifacts.md`) — Implemented continuous phase transitions, permitting the agent to bypass sequential phase gate halts and yield pauses when continuous execution is explicitly requested by the developer.
+
+### Fixed
+- **Obsolete Shell Date Mismatches Resolved** (`01-memory-bank.md`, `06-project-scanner.md`, `07-model-router.md`) — Removed all fragile, shell-based date comparison scripts for environment and cache staleness checks. Replaced with **Cognitive Date-Math** against system prompt metadata, and cleaned up obsolete exception rules in `07-model-router.md`.
+- **Retrospective Status Alignment** (`02-plan-artifacts.md`, `retrospective.md`) — Formally added the retrospective status `🔄` (Retrospective/Reviewing) to the approved registry Status Values inside the core constraints, eliminating model parsing warnings.
+- **Installer Integration** (`install.ps1`, `install.sh`) — Integrated the compiler script execution directly into the PowerShell and Bash installers, automating the deployment of the compiled profile to standard documents directory pathways.
+
 ## [2.0.3] - 2026-05-19
 
 ### Added

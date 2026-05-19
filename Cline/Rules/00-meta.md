@@ -29,11 +29,13 @@ When analyzing a complex system, trying to understand unfamiliar code, or feelin
 
 1. **WHAT** — What specific question am I trying to answer?
 2. **WHERE** — Which 1-3 files contain the answer? (Check `patterns.md` Quick Index first)
-3. **READ** — Read ONLY those specific files. Do not scan entire directories broadly.
+3. **READ** — Read ONLY those specific files (maximum of 3 files at a time). NEVER bulk-read files from search results or directory structure lists.
 4. **ANSWER** — Answer the specific question.
 5. **NEXT** — What is the next specific question?
 
-**ANTI-PATTERN**: Do not attempt to "understand the whole system" before taking action. Answer one question at a time.
+**ANTI-PATTERNS**: 
+- ❌ Do not attempt to "understand the whole system" before taking action. Answer one question at a time.
+- ❌ Eagerly loading/reading all files returned by a `grep_search` or list operation (Incremental Reading Protocol MUST be used).
 
 ## Rule Conflict Detection Checklist
 

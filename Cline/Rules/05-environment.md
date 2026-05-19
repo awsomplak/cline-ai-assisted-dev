@@ -31,6 +31,7 @@ Ensure all shell/terminal commands suggested or executed by Cline are compatible
 ## Detection & Storage
 
 1. **On every session start (when `follow rules` is invoked)**, check if `./.ai/memory-bank/environment.md` exists and is up-to-date:
+   - Check if the file is stale using the **Cognitive Date-Math Rule** defined in `01-memory-bank.md` (compare the file's `Last detected: YYYY-MM-DD` cognitively against the standard system metadata `current local time` in your prompt).
    - If missing or older than 30 days, perform detection.
    - If present and recent, use the stored values without asking.
 

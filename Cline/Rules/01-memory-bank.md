@@ -29,10 +29,11 @@ Maintain these files in `./.ai/memory-bank/` with current project knowledge:
 ## Environment Detection & Storage
 - `environment.md` must always exist in every project's memory bank.
 - If the file is missing or older than 30 days, Cline must silently perform environment detection and create/refresh it.
-- **System-Driven Age Check**: Since models lack native clocks and date arithmetic is prone to hallucination, the agent should verify age using the host system:
-  - **PowerShell (Windows)**: Run `if (-not (Test-Path ./.ai/memory-bank/environment.md) -or ((Get-Date) - (Get-Item ./.ai/memory-bank/environment.md).LastWriteTime -gt (New-TimeSpan -Days 30))) { Write-Output "STALE" }`
-  - **Bash/Zsh (Unix)**: Run `if [ ! -f ./.ai/memory-bank/environment.md ] || [ $(( $(date +%s) - $(stat -c %Y ./.ai/memory-bank/environment.md 2>/dev/null || stat -f %m ./.ai/memory-bank/environment.md 2>/dev/null || echo 0) )) -gt 2592000 ]; then echo "STALE"; fi`
-  - **Fallback**: If terminal execution is disabled or commands fail, assume the file is recent.
+- **Cognitive Date-Math Rule**: The agent must determine if the file is stale (older than 30 days) cognitively:
+  - Read the `Last detected: YYYY-MM-DD` line inside `./.ai/memory-bank/environment.md` (if it exists).
+  - Compare that date cognitively with the standard system metadata `current local time` provided in your prompt.
+  - If the difference is greater than 30 days (or the file is missing), silently perform environment detection to refresh it.
+  - This eliminates executing complex shell-script date comparisons, preventing terminal errors and executing instantly.
 - Detection procedure is defined exclusively in **`05-environment.md`** (the single source of truth). Follow that rule's steps for detection, writing, and fallback.
 - Never ask the user for confirmation during automatic creation. Only ask if auto-detection fails.
 

@@ -26,11 +26,12 @@ If any of these are missing, create them silently before proceeding. This ensure
 ## Uninitialized Recovery Protocol
  
 If a command like `follow rules` or `start phase {N}` is executed but no active plan is registered (⏹️) in `./.ai/artifacts/registry.md`:
-1. **Do not proceed** to code execution or task implementation.
-2. **Scan chat history** to check if the user has already discussed or verbally agreed upon a plan in the current session.
-3. If a verbal plan has been agreed upon, prompt the user: *"No active plan files exist on disk. Would you like me to scaffold our verbal agreement into rules-compliant plan artifacts?"*
-4. If no plan has been discussed, prompt: *"No active plan found. Please run the `create plan` command or switch to a plan using `/switch-plan {uuid}` first."*
-5. Skip further checks and stop execution until the user responds.
+1. **Permissive Q&A Exception**: If the user's current request is purely investigatory, read-only, or diagnostic (e.g. asking for explanations, scanning directory structure, checking project status, or reading file content), you **MUST** answer the question immediately. Skip the plan requirements and do not trigger any blocks or alerts.
+2. **Write & Execution Restrictor**: If the user's request attempts to write code, create or modify project files, or run system-altering commands, you **MUST NOT** proceed. Instead:
+   - **Scan chat history** to check if the user has already discussed or verbally agreed upon a plan in the current session.
+   - If a verbal plan has been agreed upon, prompt the user: *"No active plan files exist on disk. Would you like me to scaffold our verbal agreement into rules-compliant plan artifacts?"*
+   - If no plan has been discussed, prompt: *"No active plan found. Please run the `create plan` command or switch to a plan using `/switch-plan {uuid}` first."*
+   - Skip further checks and stop execution until the user responds.
 
 ### Scaffolding Path Sanitization (Security Constraint)
 When translating verbal plans to disk files during scaffolding:
@@ -75,6 +76,7 @@ Plan UUIDs must be **8-character randomized lowercase alphanumeric** identifiers
 
 - ⏹️ - Currently active plan (only ONE at a time)
 - ⏸️ - Inactive/paused plan
+- 🔄 - Retrospective/Reviewing plan (during retrospective workflow)
 - ✅ - Completed plan
 
 ## Plan Structure
@@ -158,8 +160,9 @@ When the user says "start next phase" (without specifying a number):
 2. Mark completion in real-time
     - Change `[ ]` or `[⏳]` to `[x]` in tasks.md as each task finishes
     - **Batching**: You may complete multiple small, related tasks in one go and update `tasks.md` in a single save before moving to the next major task or finishing the phase.
-3. ⛔ ABSOLUTE STOP after phase completion
-    - When all tasks in current phase are in a terminal state (`[x]`, `[x✓]`, `[x!]`, or `[—]`), you MUST STOP.
+3. ⛔ ABSOLUTE STOP after phase completion (Continuous Execution Exception)
+    - **Continuous Execution Exception**: If the user has explicitly requested to execute multiple phases continuously (e.g. "execute Phase 1 and 2 continuous"), you are permitted to proceed. You MUST silently update `progress.md` for the completed phase and immediately start execution of the next phase without yielding the turn.
+    - Otherwise, when all tasks in the current phase are in a terminal state (`[x]`, `[x✓]`, `[x!]`, or `[—]`), you MUST STOP.
     - You MUST NOT read, prepare, or execute ANY task from the next phase. You MUST NOT continue implementation.
     - Your ONLY permitted actions are: (1) update memory bank, (2) display completion message, (3) ask for confirmation.
     - **Mandatory Sentinel**: Your phase completion output MUST include this exact line: `🛑 PHASE GATE: Awaiting user confirmation.`
@@ -167,9 +170,10 @@ When the user says "start next phase" (without specifying a number):
     - **MANDATORY**: You MUST update `./.ai/memory-bank/progress.md` BEFORE displaying the phase-complete message.
     - Add entry: `[YYYY-MM-DD HH:MM] Phase {N} completed: {phase goal}. {brief summary of changes}`
     - The phase is NOT considered complete until `progress.md` is written.
-5. Require explicit confirmation
+5. Require explicit confirmation (Continuous Execution Exception)
     - Display: "✅ Phase {N}: {phase goal} completed. Tasks: {completed}/{total}."
-    - If there are remaining phases, ask: "Phase {N} complete. Proceed with Phase {N+1}: {next phase goal}?"
+    - **Continuous Execution Exception**: If continuous execution was explicitly requested by the user, bypass this confirmation yield entirely.
+    - Otherwise, if there are remaining phases, ask: "Phase {N} complete. Proceed with Phase {N+1}: {next phase goal}?"
     - **NEVER interpret silence as confirmation.** NEVER auto-proceed.
     - Wait for user to explicitly say "yes", "proceed", "continue", or similar.
     - If this is the final phase, do NOT ask to proceed. Instead, state that the implementation is complete and move to final verification.

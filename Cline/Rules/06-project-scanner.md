@@ -11,10 +11,11 @@ Before performing a full codebase scan to detect project types and dependencies:
 1. **Check Cache**: Verify `./.ai/memory-bank/patterns.md` exists and contains a populated `## Architecture` section.
 2. **Dynamic Invalidation**: Do **not** rely on a static 14-day clock (active codebases change daily, leading to stale memory and broken import hallucinations). Instead, invalidate the cache and run a new scan ONLY if:
    - **Git indicates changes**: Running `git status --porcelain` reveals changes in main directories (e.g. `src/`, `lib/`, `app/`). *Fallback: If git command fails or is not a git repository, silently ignore this check.*
-   - **Config files modified**: Key configuration files (e.g., `package.json`, `composer.json`, `Cargo.toml`, `go.mod`, `pubspec.yaml`) are newer than `patterns.md`.
-     - *PowerShell (Windows)*: `Get-ChildItem package.json, composer.json, Cargo.toml -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt (Get-Item ./.ai/memory-bank/patterns.md).LastWriteTime }`
-     - *Bash (Unix)*: `[ package.json -nt ./.ai/memory-bank/patterns.md ] || [ composer.json -nt ./.ai/memory-bank/patterns.md ]`
-   - **Safety Expiry**: The `patterns.md` file is older than **24 hours** (run dynamic checks or re-detect).
+   - **Safety Expiry (Cognitive Date-Math)**: The `patterns.md` file is older than **24 hours**. Check this cognitively:
+     - Read the `Last scanned: YYYY-MM-DD` line inside `./.ai/memory-bank/patterns.md` (if it exists).
+     - Compare that date cognitively with the standard `current local time` metadata provided in your prompt.
+     - If the difference is greater than 24 hours (or the file is missing), invalidate the cache and perform a new scan.
+     - This completely replaces complex shell-script file-age comparisons with direct, high-speed date calculations.
 3. **Bypass Scan**: If none of the invalidation criteria are met, silently bypass Steps 1 and 2, reuse the cached structure/dependencies immediately, saving up to 50% on planning tokens and increasing interaction speed.
 
 ### Step 1: Detect Project Type
@@ -72,9 +73,10 @@ Based on detected framework, scan **only** these directories (not the entire pro
 
 **Anti-Explosion Constraint**:
 - **Check if the target directory exists before scanning.** If it does not exist, silently ignore it.
-- Do NOT perform bulk `view_file` operations on all files in these targets. Reading all files will explode the context window.
+- Do NOT perform bulk `view_file` operations on all files in these targets. Reading all files will explode the context window and trigger connection timeouts.
 - Use `list_dir` to view directory structures.
 - Use `view_file` ONLY on the primary entry point (e.g. `package.json`, `index.js`, `routes/web.php`) or when searching for a specific pattern.
+- **Strict Read Limits**: Align with the 5-file parallel limit in `03-token-strategies.md`. Never request broad file views from directory structure lists or search results. Analyze the list first, pick the top 1-3 critical paths, and read those incrementally.
 
 **Relationship Detection**:
 After identifying the target directories, detect inter-file relationships:
