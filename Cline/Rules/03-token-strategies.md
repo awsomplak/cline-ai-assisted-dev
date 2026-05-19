@@ -34,9 +34,14 @@ Different AI agents have wildly different context window capacities (ranging fro
 - **Session Checkpoints**: If you detect context decay, explicitly recommend: "⚠️ Session context appears saturated. Run `/update-memory` to save state, then start a fresh session."
 - **Hard Limit**: If you are repeatedly failing a complex task, STOP and force a checkpoint: "🛑 Context limit reached. Saving state to `progress.md`. Start a new session."
 
-### Content Decay Warning
+### Proactive Cognitive Cache Protocol
 
-If you re-read a file that you already read earlier in the same session, explicitly flag: "⚠️ Re-reading {file} — consider if context was lost."
+To prevent context bloat and token waste, you MUST NOT re-read files that have already been loaded or whose content is available in your current chat history unless:
+1. The file was modified by a command or user action in the current turn.
+2. The user explicitly requests you to re-read or refresh the file contents.
+3. You explicitly explain in your thought block why the re-read is required (e.g., severe token shift or context loss).
+
+Otherwise, retrieve file structures and key details from your conversation context/history rather than calling `view_file` again. Never spam the chat with "⚠️ Re-reading {file}" warnings; handle checks silently in your thought process.
 
 ### File-Size Budgets
 
@@ -65,7 +70,14 @@ When `progress.md` exceeds 60 lines:
 - Avoid verbose explanations in generated files
 - Use compact table formats for data
 - Do **not** create `notes.md` unless there are significant constraints or risks
-- **Turn-Scoped File Reading Budget (High-Speed Reading)**: To preserve processing performance and prevent model confusion under massive windows, limit file reads to a maximum of **10 files** within a single execution turn. Prioritize using native high-fidelity APIs like `grep_search` and the `Quick Index` to locate lines directly instead of executing full `view_file` calls. Parallelize file read tool calls within the same turn to maintain rapid interactions and avoid unnecessary conversational turn yields, which worsen token accumulation. Context flushes are handled exclusively by fresh session checkpoints.
+- **Anti-Explosion Reading Protocol (Strict 5-File Turn Budget)**: To preserve processing performance, prevent API connection interruptions (`Invalid API Response`), and avoid context-bloat, you MUST NOT read more than **5 files** in a single execution turn.
+  - **Absolute Parallel Limit**: Never invoke `view_file` on more than 5 files concurrently in the same turn.
+  - **Incremental Search Processing**: If a `grep_search` or directory listing returns multiple matches, you **MUST NOT** immediately bulk-read all matched files. Instead:
+    1. Scan the search match snippets/lines directly from the search output.
+    2. Identify and rank the top **1 to 3 most relevant files**.
+    3. Read only those top 1-3 files in the current turn.
+    4. Only read additional files in subsequent turns if absolutely necessary after analyzing the initial set.
+  - **High-Fidelity Search First**: Prioritize using `grep_search` and `patterns.md`'s `Quick Index` to find specific patterns or lines directly rather than executing broad `view_file` calls.
 
 ### Compact Rules & Minimal Action Profile (Small Local Models)
 To prevent small local models (1.5B–3B parameters) from suffering context window failures, slow outputs, or tool-timeout loops:

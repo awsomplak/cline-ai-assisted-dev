@@ -13,9 +13,10 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Target paths
-$RulesDir     = Join-Path $env:USERPROFILE "Documents\Cline\Rules"
-$WorkflowsDir = Join-Path $env:USERPROFILE "Documents\Cline\Workflows"
-$SkillsDir    = Join-Path $env:USERPROFILE ".agents\skills\plan-creator"
+$RulesDir       = Join-Path $env:USERPROFILE "Documents\Cline\Rules"
+$WorkflowsDir   = Join-Path $env:USERPROFILE "Documents\Cline\Workflows"
+$SkillsDir      = Join-Path $env:USERPROFILE ".agents\skills\plan-creator"
+$PortabilityDir = Join-Path $env:USERPROFILE "Documents\Cline\portability"
 
 # Source paths
 $SrcRules     = Join-Path $ScriptDir "Cline\Rules"
@@ -30,9 +31,9 @@ $FeatureSupport = if ($IsCore) { "Full (supports && and ||)" } else { "Standard 
 
 # --- Header ---
 Write-Host ""
-Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║   Cline Rules v2.0.3 — Installer             ║" -ForegroundColor Cyan
-Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "  +----------------------------------------------+" -ForegroundColor Cyan
+Write-Host "  |   Cline Rules v2.0.4 - Installer             |" -ForegroundColor Cyan
+Write-Host "  +----------------------------------------------+" -ForegroundColor Cyan
 Write-Host "    Detected Shell:  $ShellType" -ForegroundColor DarkGray
 Write-Host "    Chaining Style:  $FeatureSupport" -ForegroundColor DarkGray
 Write-Host ""
@@ -40,13 +41,13 @@ Write-Host ""
 # --- Uninstall mode ---
 if ($Uninstall) {
     Write-Host "  Uninstalling Cline Rules..." -ForegroundColor Yellow
-    $dirsToRemove = @($RulesDir, $WorkflowsDir, $SkillsDir)
+    $dirsToRemove = @($RulesDir, $WorkflowsDir, $SkillsDir, $PortabilityDir)
     foreach ($dir in $dirsToRemove) {
         if (Test-Path $dir) {
             Remove-Item -Recurse -Force -Path $dir
-            Write-Host "  ✓ Removed: $dir" -ForegroundColor Green
+            Write-Host "  * Removed: $dir" -ForegroundColor Green
         } else {
-            Write-Host "  — Not found: $dir" -ForegroundColor DarkGray
+            Write-Host "  - Not found: $dir" -ForegroundColor DarkGray
         }
     }
     Write-Host ""
@@ -84,7 +85,7 @@ function Install-Files {
         $count++
     }
 
-    Write-Host "    ✓ ${Label}: ${count} file(s) → $DestDir" -ForegroundColor Green
+    Write-Host "    * ${Label}: ${count} file(s) -> $DestDir" -ForegroundColor Green
 }
 
 # --- 1. Rules ---
@@ -108,9 +109,9 @@ if (-not (Test-Path $SkillsDir)) {
 $skillFile = Join-Path $SrcSkill "SKILL.md"
 if (Test-Path $skillFile) {
     Copy-Item -Path $skillFile -Destination $SkillsDir -Force
-    Write-Host "    ✓ SKILL.md → $SkillsDir" -ForegroundColor Green
+    Write-Host "    * SKILL.md -> $SkillsDir" -ForegroundColor Green
 } else {
-    Write-Host "    ✗ SKILL.md not found in source" -ForegroundColor Red
+    Write-Host "    ! SKILL.md not found in source" -ForegroundColor Red
 }
 
 # Templates
@@ -129,20 +130,41 @@ if (Test-Path $templatesSrc) {
         Copy-Item -Path $file.FullName -Destination $templatesDest -Force
         $tplCount++
     }
-    Write-Host "    ✓ Templates: ${tplCount} file(s) → $templatesDest" -ForegroundColor Green
+    Write-Host "    * Templates: ${tplCount} file(s) -> $templatesDest" -ForegroundColor Green
 } else {
-    Write-Host "    ⚠ Templates directory not found in source — skipping" -ForegroundColor Yellow
+    Write-Host "    ! Templates directory not found in source - skipping" -ForegroundColor Yellow
+}
+
+# --- 4. Compile Unified Rules Profile ---
+Write-Host "  [4/4] Compiling and Installing Unified rules profile..." -ForegroundColor Cyan
+try {
+    node "$ScriptDir\scripts\compile-rules.js" | Out-Null
+    
+    # Copy compiled .clinerules
+    if (-not (Test-Path $PortabilityDir)) {
+        New-Item -ItemType Directory -Force -Path $PortabilityDir | Out-Null
+        Write-Host "    Created: $PortabilityDir" -ForegroundColor Green
+    }
+    
+    $compiledSrc = Join-Path $ScriptDir "Cline\portability\.clinerules"
+    if (Test-Path $compiledSrc) {
+        Copy-Item -Path $compiledSrc -Destination $PortabilityDir -Force
+        Write-Host "    * Compiled Profile -> $PortabilityDir\.clinerules" -ForegroundColor Green
+    }
+} catch {
+    Write-Host "    ! Rule compiler failed or Node.js is not found - skipping compiled profile installation" -ForegroundColor Yellow
 }
 
 # --- Summary ---
 Write-Host ""
-Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "  ║   Installation complete! (v2.0.3)            ║" -ForegroundColor Green
-Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "  +----------------------------------------------+" -ForegroundColor Green
+Write-Host "  |   Installation complete! (v2.0.4)            |" -ForegroundColor Green
+Write-Host "  +----------------------------------------------+" -ForegroundColor Green
 Write-Host ""
 Write-Host "    Rules:     $RulesDir"
 Write-Host "    Workflows: $WorkflowsDir"
 Write-Host "    Skill:     $SkillsDir"
+Write-Host "    Profile:   $PortabilityDir"
 Write-Host ""
 Write-Host "  Next steps:" -ForegroundColor Cyan
 Write-Host "    1. Open your IDE (VS Code, JetBrains, etc.)"

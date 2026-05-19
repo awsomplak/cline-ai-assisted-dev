@@ -19,6 +19,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RULES_DIR="$HOME/Documents/Cline/Rules"
 WORKFLOWS_DIR="$HOME/Documents/Cline/Workflows"
 SKILLS_DIR="$HOME/.agents/skills/plan-creator"
+PORTABILITY_DIR="$HOME/Documents/Cline/portability"
 
 # Source paths
 SRC_RULES="$SCRIPT_DIR/Cline/Rules"
@@ -26,14 +27,14 @@ SRC_WORKFLOWS="$SCRIPT_DIR/Cline/Workflows"
 SRC_SKILL="$SCRIPT_DIR/Cline/Skills/plan-creator"
 
 echo -e "${CYAN}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║   Cline Rules v2.0.3 — Installer             ║${NC}"
+echo -e "${CYAN}║   Cline Rules v2.0.4 — Installer             ║${NC}"
 echo -e "${CYAN}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 
 # --- Uninstall mode ---
 if [ "${1:-}" = "--uninstall" ]; then
     echo -e "${YELLOW}Uninstalling Cline Rules...${NC}"
-    for dir in "$RULES_DIR" "$WORKFLOWS_DIR" "$SKILLS_DIR"; do
+    for dir in "$RULES_DIR" "$WORKFLOWS_DIR" "$SKILLS_DIR" "$PORTABILITY_DIR"; do
         if [ -d "$dir" ]; then
             rm -rf "$dir"
             echo -e "  ${GREEN}✓${NC} Removed: $dir"
@@ -119,15 +120,34 @@ else
     echo -e "  ${YELLOW}⚠${NC} Templates directory not found in source — skipping"
 fi
 
+# --- 4. Compile Unified Rules Profile ---
+echo -e "${CYAN}[4/4]${NC} Compiling and Installing Unified rules profile..."
+if command -v node >/dev/null 2>&1; then
+    node "$SCRIPT_DIR/scripts/compile-rules.js" >/dev/null 2>&1 || true
+    
+    if [ ! -d "$PORTABILITY_DIR" ]; then
+        mkdir -p "$PORTABILITY_DIR"
+        echo -e "  ${GREEN}Created${NC} $PORTABILITY_DIR"
+    fi
+    
+    if [ -f "$SCRIPT_DIR/Cline/portability/.clinerules" ]; then
+        cp -f "$SCRIPT_DIR/Cline/portability/.clinerules" "$PORTABILITY_DIR/"
+        echo -e "  ${GREEN}✓${NC} Compiled Profile → $PORTABILITY_DIR/.clinerules"
+    fi
+else
+    echo -e "  ${YELLOW}⚠${NC} node not found — skipping compiled profile installation"
+fi
+
 # --- Summary ---
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║   Installation complete! (v2.0.3)            ║${NC}"
+echo -e "${GREEN}║   Installation complete! (v2.0.4)            ║${NC}"
 echo -e "${GREEN}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "  Rules:     $RULES_DIR"
 echo -e "  Workflows: $WORKFLOWS_DIR"
 echo -e "  Skill:     $SKILLS_DIR"
+echo -e "  Profile:   $PORTABILITY_DIR"
 echo ""
 echo -e "${CYAN}Next steps:${NC}"
 echo "  1. Open your IDE (VS Code, JetBrains, etc.)"

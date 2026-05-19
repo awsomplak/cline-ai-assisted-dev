@@ -43,8 +43,6 @@ Raw shell execution is restricted to tasks where no native tool exists (e.g., ru
 **EXCEPTION - Permitted Shell Commands:**
 
 The following operations are explicitly permitted and do NOT violate the Native Tool Priority rule:
-- Date difference calculations using PowerShell `New-TimeSpan` or Unix `date +%s` as specified in `01-memory-bank.md` (environment age checks)
-- File age comparison scripts as specified in `06-project-scanner.md`
 - Any command explicitly whitelisted by other rule files with the `[PERMITTED]` marker
-
-These exceptions exist because no native IDE tool provides equivalent date-math or cross-platform file timestamp comparison functionality.
+- Native shell test runs (e.g., `npm test`, `pytest`) and project build commands (e.g., `npm run dev`, `npm run build`)
+- Git commands used during active version auditing or scans (e.g., `git status --porcelain`)
