@@ -20,6 +20,7 @@
         - Active: {count}
         - Inactive: {count}
         - Completed: {count}
+        - Archived: {count} (if registry_archive.md exists)
 
 4. **Active Plan Details**
     - If active plan exists:

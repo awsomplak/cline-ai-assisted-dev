@@ -31,7 +31,7 @@ Ensure all shell/terminal commands suggested or executed by Cline are compatible
 ## Detection & Storage
 
 1. **On every session start (when `follow rules` is invoked)**, check if `./.ai/memory-bank/environment.md` exists and is up-to-date:
-   - If missing or older than 14 days, perform detection.
+   - If missing or older than 30 days, perform detection.
    - If present and recent, use the stored values without asking.
 
 2. **Detection procedure (silent, no user confirmation)**:

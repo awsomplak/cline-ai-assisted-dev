@@ -26,7 +26,7 @@ SRC_WORKFLOWS="$SCRIPT_DIR/Cline/Workflows"
 SRC_SKILL="$SCRIPT_DIR/Cline/Skills/plan-creator"
 
 echo -e "${CYAN}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║   Cline Rules v2.0.2 — Installer             ║${NC}"
+echo -e "${CYAN}║   Cline Rules v2.0.3 — Installer             ║${NC}"
 echo -e "${CYAN}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -122,7 +122,7 @@ fi
 # --- Summary ---
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║   Installation complete! (v2.0.2)            ║${NC}"
+echo -e "${GREEN}║   Installation complete! (v2.0.3)            ║${NC}"
 echo -e "${GREEN}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 echo -e "  Rules:     $RULES_DIR"

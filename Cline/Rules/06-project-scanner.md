@@ -10,7 +10,7 @@ Provide a deterministic, framework-aware scanning protocol so that project analy
 Before performing a full codebase scan to detect project types and dependencies:
 1. **Check Cache**: Verify `./.ai/memory-bank/patterns.md` exists and contains a populated `## Architecture` section.
 2. **Dynamic Invalidation**: Do **not** rely on a static 14-day clock (active codebases change daily, leading to stale memory and broken import hallucinations). Instead, invalidate the cache and run a new scan ONLY if:
-   - **Git indicates changes**: Running `git status --porcelain` reveals changes in main directories (e.g. `src/`, `lib/`, `app/`).
+   - **Git indicates changes**: Running `git status --porcelain` reveals changes in main directories (e.g. `src/`, `lib/`, `app/`). *Fallback: If git command fails or is not a git repository, silently ignore this check.*
    - **Config files modified**: Key configuration files (e.g., `package.json`, `composer.json`, `Cargo.toml`, `go.mod`, `pubspec.yaml`) are newer than `patterns.md`.
      - *PowerShell (Windows)*: `Get-ChildItem package.json, composer.json, Cargo.toml -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt (Get-Item ./.ai/memory-bank/patterns.md).LastWriteTime }`
      - *Bash (Unix)*: `[ package.json -nt ./.ai/memory-bank/patterns.md ] || [ composer.json -nt ./.ai/memory-bank/patterns.md ]`
@@ -71,6 +71,7 @@ Based on detected framework, scan **only** these directories (not the entire pro
 | Generic | `src/`, `lib/`, `config/`, `test/` |
 
 **Anti-Explosion Constraint**:
+- **Check if the target directory exists before scanning.** If it does not exist, silently ignore it.
 - Do NOT perform bulk `view_file` operations on all files in these targets. Reading all files will explode the context window.
 - Use `list_dir` to view directory structures.
 - Use `view_file` ONLY on the primary entry point (e.g. `package.json`, `index.js`, `routes/web.php`) or when searching for a specific pattern.

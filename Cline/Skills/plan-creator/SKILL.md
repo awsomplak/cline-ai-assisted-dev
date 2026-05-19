@@ -4,7 +4,7 @@ description: >
   Creates a new structured implementation plan. ONLY activate when the user
   explicitly requests a new plan with phrases like "create a new plan",
   "generate plan for", "make a detailed plan to...", "break down tasks for...",
-  "create plan fo", "plan fo", "make plan fo", or uses the command "create plan".
+  "create plan fo", "plan fo", "make plan fo", or uses the command "create plan", or when confirming the Uninitialized Recovery Protocol (e.g. "yes", "yes, scaffold", "go ahead", "scaffold").
   Do NOT activate for questions about existing plans, status inquiries, or memory updates.
   Operates on the active project workspace only.
 ---
@@ -42,9 +42,9 @@ Activate this skill when the user explicitly requests a **new** plan using the t
     - If registry exists but table structure is malformed (missing headers or separator row), rebuild the table header and warn: "⚠️ Registry table was malformed. Headers restored. Verify plan entries."
 
 6. **Generate Plan Identity**
-    - Generate an 8-character randomized alphanumeric UUID per the format defined in `02-plan-artifacts.md` (UUID Format section):
+    - Generate an 8-character randomized lowercase alphanumeric UUID per the format defined in `02-plan-artifacts.md` (UUID Format section):
       - Length: 8 characters
-      - Character set: `[a-zA-Z0-9]` (62 possible characters per position)
+      - Character set: `[a-z0-9]` (lowercase letters and digits ONLY)
       - Generation: Random (not sequential)
     - Ask user for a concise one-line summary of the plan
     - **CRITICAL: STOP HERE AND WAIT FOR THE USER's RESPONSE.** Do NOT proceed to Step 7 until the user has provided the summary.

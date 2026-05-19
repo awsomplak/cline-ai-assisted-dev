@@ -16,7 +16,8 @@ Runs automatically when all tasks in all phases of the active plan are marked co
 ## Execution Steps
 
 ### Step 1: Request User Feedback & Turn-Yield
-Ask the user:
+1. **Registry Transition**: Update `./.ai/artifacts/registry.md` to change this plan's status from `⏹️` to `🔄` (Retrospective/Reviewing).
+2. Ask the user:
 > "What patterns or solutions from this plan worked well and should be saved for future plans? (Say 'skip' or 'nothing' to proceed without saving)"
 
 **CRITICAL: IMMEDIATELY YIELD THE TURN.** You MUST stop writing, output the prompt above, and terminate your current message response immediately. Do NOT run other commands, write files, or update the registry in this turn. You are strictly forbidden from proceeding to Step 2 until the user has submitted their response.

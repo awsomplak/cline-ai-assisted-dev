@@ -34,7 +34,7 @@ If a command like `follow rules` or `start phase {N}` is executed but no active 
 
 ### Scaffolding Path Sanitization (Security Constraint)
 When translating verbal plans to disk files during scaffolding:
-- **Target Path Lock**: You **MUST** strictly validate that all *target file paths for write operations* lie entirely within the `./.ai/artifacts/{uuid}/` directory to prevent path-traversal exploits. Strip all relative directory operators (`../`, `..\`) and absolute path prefixes from the target filenames before writing.
+- **Target Path Lock**: You **MUST** strictly validate that all *target file paths for write operations* lie entirely within the `./.ai/artifacts/{uuid}/` directory to prevent path-traversal exploits, **with the sole exception of `./.ai/artifacts/registry.md` (and its archive) for plan registration**. Strip all relative directory operators (`../`, `..\`) and absolute path prefixes from the target filenames before writing.
 - **Content Exemption**: This path sanitization applies strictly to the *destination write paths* on the host filesystem. It **MUST NOT** strip, alter, or sanitize relative links (e.g., `../../memory-bank/patterns.md`) written *inside* the markdown document text itself, which are required for relative previewing.
 
 ## Registry Protocol
@@ -47,17 +47,17 @@ To prevent context bloat and token waste in long-running projects, the registry 
 2. **Compact Table Constraints**: `./.ai/artifacts/registry.md` strictly contains only the active plan (`⏹️`), any paused plans (`⏸️`), and the **last 3 completed plans** (`✅`).
 3. **Archiving Trigger**: When a plan is marked completed (`✅`) in `registry.md`, if the total completed plan rows in the table exceed 3, the oldest completed plan rows must be silently cut from `registry.md` and appended to `registry_archive.md` (creating it if missing, with the header `# Plan Registry Archive` followed by the markdown table column headers: `\n\n| UUID | Status | Date | Summary |\n|------|--------|------|---------|`).
 4. **Fail-Safe Archive Discovery Fallback**: If a plan UUID or list cannot be resolved in `./.ai/artifacts/registry.md` (e.g. during a plan switch or historical audit), you **MUST** silently read and parse `./.ai/artifacts/registry_archive.md` before declaring the plan missing or triggering the Uninitialized Recovery Protocol.
-5. **Archive Uniqueness & Duplicate Filtering**: When writing or appending rows to `./.ai/artifacts/registry_archive.md`, you **MUST** strictly verify that the target plan UUID does not already exist in the archive. Duplicate entries must be silently filtered out to prevent data corruption.
+5. **Archive Uniqueness & Overwriting**: When writing or appending rows to `./.ai/artifacts/registry_archive.md`, if the target plan UUID already exists in the archive, you MUST overwrite the old row with the newly completed data to preserve the latest context.
 
 ## UUID Format
 
-Plan UUIDs must be **8-character randomized alphanumeric** identifiers:
+Plan UUIDs must be **8-character randomized lowercase alphanumeric** identifiers:
 - **Length**: 8 characters
-- **Character set**: `[a-zA-Z0-9]` (lowercase letters, uppercase letters, digits)
-- **Collision space**: 62⁸ ≈ 218 trillion possible values
-- **Format**: `[a-zA-Z0-9]{8}` — no dashes, no special characters
+- **Character set**: `[a-z0-9]` (lowercase letters and digits ONLY)
+- **Collision space**: 36⁸ ≈ 2.8 trillion possible values
+- **Format**: `[a-z0-9]{8}` — no dashes, no special characters
 - **Generation**: Random (not sequential) to avoid predictability
-- **Case**: Case-sensitive; `aB3xK7mP` and `ab3xk7mp` are distinct values
+- **Case**: Lowercase ONLY to prevent filesystem collisions on Windows/macOS.
 
 ## Registry Format
 
@@ -112,7 +112,7 @@ Tasks must be organized by phases:
 Optional annotations for smarter task execution:
 
 ### Dependencies
-Use `→ depends:` to mark tasks that require other tasks to be completed first.
+Use `→ depends: {exact task name}` to mark tasks that require other tasks to be completed first. The dependency MUST exactly match the name of another task in the same plan.
 
 ### Task Status Markers
 
@@ -159,7 +159,7 @@ When the user says "start next phase" (without specifying a number):
     - Change `[ ]` or `[⏳]` to `[x]` in tasks.md as each task finishes
     - **Batching**: You may complete multiple small, related tasks in one go and update `tasks.md` in a single save before moving to the next major task or finishing the phase.
 3. ⛔ ABSOLUTE STOP after phase completion
-    - When all tasks in current phase are `[x]`, you MUST STOP.
+    - When all tasks in current phase are in a terminal state (`[x]`, `[x✓]`, `[x!]`, or `[—]`), you MUST STOP.
     - You MUST NOT read, prepare, or execute ANY task from the next phase. You MUST NOT continue implementation.
     - Your ONLY permitted actions are: (1) update memory bank, (2) display completion message, (3) ask for confirmation.
     - **Mandatory Sentinel**: Your phase completion output MUST include this exact line: `🛑 PHASE GATE: Awaiting user confirmation.`
@@ -188,7 +188,7 @@ When the user says "start next phase" (without specifying a number):
 
 When the user reports a bug or error regarding the project:
 - If the plan is IN-PROGRESS (⏹️): Add bug-fix task(s) to the current active phase
-- If the plan is COMPLETED (✅): Reactivate the plan and add a new phase for fixes
+- If the plan is COMPLETED (✅): Pause (⏸️) the currently active plan (if any) first, then reactivate the old plan to ⏹️ and add a new phase for fixes
 
 ### Walkthrough Protocol (Token Optimization)
 

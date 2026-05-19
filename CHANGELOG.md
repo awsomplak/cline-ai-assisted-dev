@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.3] - 2026-05-19
+
+### Added
+- **High-Speed Cloud Model Routing** (`07-model-router.md`) — Introduced dedicated awareness and optimization guidelines for high-speed cloud models (e.g. Gemini 3 Pro/Flash, GPT-4o-mini, Claude 3.5 Haiku, DeepSeek v4 Pro/Flash, and etc.), authorizing them to handle complex scopes eagerly while strictly maintaining native tool priority for maximum performance.
+- **Archived Plans Visibility** (`plan-status.md`) — Added support to parse and display the total count of completed plans located in the archive table, preventing user confusion about deleted plans.
+
+### Fixed
+- **Registry Archive Overwriting** (`02-plan-artifacts.md`) — Updated the archiving protocol to overwrite existing plan records in the archive instead of filtering them as duplicates, preserving the latest completion summaries and timestamps for re-opened plans.
+- **Dependency Deadlock Protections** (`02-plan-artifacts.md`) — Mandated that `→ depends: {exact task name}` must exactly match the name of another task in the same plan, preventing the agent from stalling on conceptual or unwritten dependencies.
+- **Dual-Active Plan Paradox Resolved** (`02-plan-artifacts.md`) — Enforced that the active plan must be paused (`⏸️`) before reactivating a completed plan (`✅`) to `⏹️` due to a bug report, maintaining the single-active-plan constraint.
+- **Archive Plan Restoration** (`switch-plan.md`) — Added a rule to restore archived plans back into the active registry (`registry.md`) and remove them from the archive (`registry_archive.md`) when switched back to active.
+- **Unified Cache Thresholds** (`01-memory-bank.md`, `04-commands.md`, `05-environment.md`, `update-memory.md`) — Synchronized the environment check stale threshold to exactly 30 days across all rules, reference tables, and workflows (upgraded from 14 days).
+- **Git Scanner Vulnerability Protection** (`06-project-scanner.md`) — Added silent command fallbacks when running Git operations, preventing shell crashes or infinite recovery loops in non-git repositories or fresh folders.
+- **Scaffolding Registry Write Exception** (`02-plan-artifacts.md`) — Whitelisted `./.ai/artifacts/registry.md` as an exception in the Target Path Lock, permitting the plan-creator skill to register plans while maintaining robust path-traversal security.
+- **Recovery Scaffolding Confirmations** (`SKILL.md`) — Expanded the plan-creator's strict trigger keywords to recognize standard recovery affirmations like `"yes"`, `"scaffold"`, and `"yes, scaffold"`, allowing seamless scaffolding initialization during recovery.
+
 ## [2.0.2] - 2026-05-19
 
 ### Fixed
