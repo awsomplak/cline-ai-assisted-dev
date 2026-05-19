@@ -15,7 +15,8 @@
 
 3. **Update Registry**
     - Change current `⏹️` status to `⏸️`
-    - Change target UUID status to `⏹️`
+    - If target UUID is in `registry_archive.md`, move/restore its row back into `registry.md` with status `⏹️`, and remove the duplicate row from `registry_archive.md`
+    - If target UUID is in `registry.md`, change status to `⏹️`
     - Preserve all other rows unchanged
 
 4. **Load New Active Plan**

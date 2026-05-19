@@ -5,7 +5,7 @@
 
 | User Input | Action |
 |------------|--------|
-| `follow rules` | 1. **Load environment:** Read `./.ai/memory-bank/environment.md`. If missing or older than 14 days, run environment detection first (see `05-environment.md`). 2. Parse `registry.md` for active plan (⏹️). 3. **Fallback Check**: If registry.md or active plan is missing, STOP, notify user, and offer to scaffold the current task/verbal plan using the plan-creator skill (see Uninitialized Recovery Protocol in `02-plan-artifacts.md`). 4. Load plan's `tasks.md`. Do not load other memory bank files unless required by the next user request. |
+| `follow rules` | 1. **Load environment:** Read `./.ai/memory-bank/environment.md`. If missing or older than 30 days, run environment detection first (see `05-environment.md`). 2. Parse `registry.md` for active plan (⏹️). 3. **Fallback Check**: If registry.md or active plan is missing, STOP, notify user, and offer to scaffold the current task/verbal plan using the plan-creator skill (see Uninitialized Recovery Protocol in `02-plan-artifacts.md`). 4. Load plan's `tasks.md`. Do not load other memory bank files unless required by the next user request. |
 | `create plan` | Activate the `plan-creator` skill to generate a new plan and populate the memory bank. |
 | `/switch-plan {uuid}` | Change active plan in current project's registry |
 | `/plan-status` | Display registry table with active plan highlighted |

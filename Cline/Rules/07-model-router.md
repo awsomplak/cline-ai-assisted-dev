@@ -24,9 +24,15 @@ If you encounter repeated failures, output format errors, circular dependencies,
 
 ## Universal Model Awareness
 
-- Do not guess your parameter size - check system metadata
-- Warn users on Complex tasks
-- Avoid reading files larger than 500 lines
+- **High-Speed Cloud Models (e.g. Gemini 3 Pro/Flash, GPT-4o-mini, Claude 3.5 Haiku, DeepSeek v4 Pro/Flash, and etc.)**: If active, you are fully authorized to handle 🔴 Complex tasks and large context scopes eagerly, but you MUST strictly maintain Native Tool Priority to guarantee execution speed.
+
+### API Response Strictness (Anti-Parse Error Protocol)
+
+To prevent `Invalid API Response` (empty or unparsable response) errors:
+1. **Valid Tool Formats**: Always output tool calls strictly matching the provided schema. Do not hallucinate non-existent tools or parameters.
+2. **No Markdown Wrapping**: Do not wrap JSON or XML tool calls inside markdown code blocks (````json ... ````) unless explicitly requested by the environment. Output raw tool schemas.
+3. **Never Empty**: Never return a completely empty response. Always include a brief thought process before executing a tool.
+4. **Valid JSON**: Ensure string escapes and JSON structures are flawlessly formatted.
 
 ### Native Tool Priority (REPL Hallucination Prevention)
 

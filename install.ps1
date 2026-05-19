@@ -31,7 +31,7 @@ $FeatureSupport = if ($IsCore) { "Full (supports && and ||)" } else { "Standard 
 # --- Header ---
 Write-Host ""
 Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║   Cline Rules v2.0.2 — Installer             ║" -ForegroundColor Cyan
+Write-Host "  ║   Cline Rules v2.0.3 — Installer             ║" -ForegroundColor Cyan
 Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host "    Detected Shell:  $ShellType" -ForegroundColor DarkGray
 Write-Host "    Chaining Style:  $FeatureSupport" -ForegroundColor DarkGray
@@ -137,7 +137,7 @@ if (Test-Path $templatesSrc) {
 # --- Summary ---
 Write-Host ""
 Write-Host "  ╔══════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "  ║   Installation complete! (v2.0.2)            ║" -ForegroundColor Green
+Write-Host "  ║   Installation complete! (v2.0.3)            ║" -ForegroundColor Green
 Write-Host "  ╚══════════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
 Write-Host "    Rules:     $RulesDir"
